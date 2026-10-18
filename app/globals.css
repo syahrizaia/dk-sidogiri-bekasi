@@ -1,26 +1,581 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
   --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  /* LIGHT MODE ("Frosted Pearl & Sidogiri Emerald") */
+  --background: oklch(0.985 0.005 160);
+  --foreground: oklch(0.20 0.025 165);
+  
+  /* CARD & POPOVER (Translucent Glass Base) */
+  --card: rgba(255, 255, 255, 0.68);
+  --card-foreground: oklch(0.20 0.025 165);
+  --popover: rgba(255, 255, 255, 0.85);
+  --popover-foreground: oklch(0.20 0.025 165);
+  
+  /* PRIMARY: Deep Emerald Khas Sidogiri */
+  --primary: oklch(0.38 0.14 158);
+  --primary-foreground: oklch(0.99 0 0);
+  
+  /* SECONDARY & MUTED: Soft Frosted Sage */
+  --secondary: oklch(0.94 0.02 165);
+  --secondary-foreground: oklch(0.32 0.09 160);
+  --muted: oklch(0.95 0.015 165 / 80%);
+  --muted-foreground: oklch(0.48 0.025 165);
+  
+  /* ACCENT & BORDERS */
+  --accent: oklch(0.93 0.025 160);
+  --accent-foreground: oklch(0.35 0.12 160);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: rgba(255, 255, 255, 0.82);
+  --input: rgba(255, 255, 255, 0.75);
+  --ring: oklch(0.42 0.14 160);
+  
+  /* APPLE LIQUID GLASS TOKENS - LIGHT (OFFICIAL APPLE SPEC) */
+  --glass-bg: rgba(255, 255, 255, 0.45);
+  --glass-bg-elevated: rgba(255, 255, 255, 0.65);
+  --glass-bg-clear: rgba(255, 255, 255, 0.22);
+  --glass-border: rgba(255, 255, 255, 0.65);
+  --glass-border-subtle: rgba(255, 255, 255, 0.40);
+  --glass-highlight-top: rgba(255, 255, 255, 0.60);
+  --glass-highlight-bottom: rgba(255, 255, 255, 0.15);
+  --glass-shadow: rgba(0, 0, 0, 0.18);
+  --glass-shadow-hover: rgba(0, 0, 0, 0.24);
+  --glass-blur: 32px;
+  --glass-saturate: 210%;
+  --apple-spring: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* PESANTREN NOBLE ACCENTS */
+  --sidogiri-gold: oklch(0.78 0.12 85);
+  --sidogiri-gold-subtle: oklch(0.92 0.05 85);
+  --sidogiri-emerald: oklch(0.36 0.16 156);
+  --sidogiri-jade: oklch(0.52 0.15 162);
+
+  /* CHARTS */
+  --chart-1: oklch(0.38 0.14 158); /* Sidogiri Emerald */
+  --chart-2: oklch(0.58 0.12 165); /* Mint Jade */
+  --chart-3: oklch(0.74 0.10 170); /* Soft Mint */
+  --chart-4: oklch(0.82 0.10 85);  /* Noble Gold */
+  --chart-5: oklch(0.25 0.08 155); /* Deep Forest */
+  
+  --radius: 1.125rem;
+  
+  /* SIDEBAR */
+  --sidebar: rgba(255, 255, 255, 0.75);
+  --sidebar-foreground: oklch(0.20 0.025 165);
+  --sidebar-primary: oklch(0.38 0.14 158);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: rgba(255, 255, 255, 0.6);
+  --sidebar-accent-foreground: oklch(0.38 0.14 158);
+  --sidebar-border: rgba(255, 255, 255, 0.7);
+  --sidebar-ring: oklch(0.38 0.14 158);
+}
+
+.dark {
+  /* DARK MODE ("Obsidian Smoked Glass & Deep Jade") */
+  --background: oklch(0.10 0.016 165); /* #070E0B */
+  --foreground: oklch(0.96 0.01 160);  /* Pearl White #F3F7F5 */
+  
+  /* CARD & POPOVER (Smoked Glass Base) */
+  --card: rgba(14, 26, 20, 0.58);
+  --card-foreground: oklch(0.96 0.01 160);
+  --popover: rgba(14, 26, 20, 0.88);
+  --popover-foreground: oklch(0.96 0.01 160);
+  
+  /* PRIMARY: Bright Jade Mint */
+  --primary: oklch(0.72 0.13 162);
+  --primary-foreground: oklch(0.12 0.02 165);
+  
+  /* SECONDARY & MUTED */
+  --secondary: oklch(0.18 0.025 165);
+  --secondary-foreground: oklch(0.96 0.01 160);
+  --muted: oklch(0.18 0.018 165 / 75%);
+  --muted-foreground: oklch(0.68 0.02 165);
+  
+  /* ACCENT & BORDERS */
+  --accent: oklch(0.20 0.025 165);
+  --accent-foreground: oklch(0.74 0.12 162);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: rgba(255, 255, 255, 0.12);
+  --input: rgba(255, 255, 255, 0.10);
+  --ring: oklch(0.72 0.13 162);
+
+  /* APPLE LIQUID GLASS TOKENS - DARK (OFFICIAL APPLE SPEC) */
+  --glass-bg: rgba(18, 28, 22, 0.40);
+  --glass-bg-elevated: rgba(18, 28, 22, 0.60);
+  --glass-bg-clear: rgba(18, 28, 22, 0.20);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-border-subtle: rgba(255, 255, 255, 0.08);
+  --glass-highlight-top: rgba(255, 255, 255, 0.25);
+  --glass-highlight-bottom: rgba(52, 211, 153, 0.12);
+  --glass-shadow: rgba(0, 0, 0, 0.55);
+  --glass-shadow-hover: rgba(0, 0, 0, 0.70);
+  --glass-blur: 32px;
+  --glass-saturate: 210%;
+
+  /* PESANTREN NOBLE ACCENTS */
+  --sidogiri-gold: oklch(0.78 0.13 85);
+  --sidogiri-gold-subtle: oklch(0.35 0.05 85);
+  --sidogiri-emerald: oklch(0.70 0.16 160);
+  --sidogiri-jade: oklch(0.78 0.14 165);
+  
+  /* CHARTS DARK MODE */
+  --chart-1: oklch(0.74 0.12 162);
+  --chart-2: oklch(0.55 0.12 160);
+  --chart-3: oklch(0.40 0.09 155);
+  --chart-4: oklch(0.82 0.11 88);
+  --chart-5: oklch(0.30 0.08 155);
+  
+  /* SIDEBAR DARK MODE */
+  --sidebar: rgba(14, 26, 20, 0.75);
+  --sidebar-foreground: oklch(0.96 0.01 160);
+  --sidebar-primary: oklch(0.72 0.13 162);
+  --sidebar-primary-foreground: oklch(0.12 0.02 165);
+  --sidebar-accent: rgba(255, 255, 255, 0.06);
+  --sidebar-accent-foreground: oklch(0.72 0.13 162);
+  --sidebar-border: rgba(255, 255, 255, 0.12);
+  --sidebar-ring: oklch(0.72 0.13 162);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+  html {
+    @apply font-sans;
+    scroll-behavior: smooth;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* APPLE LIQUID GLASS MATERIAL UTILITIES (OFFICIAL APPLE HIG & TECH SPEC) */
+/* 1. Regular Variant - Primary functional material for sidebars, navigation bars, alerts, popovers */
+.liquid-glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border: 1px solid var(--glass-border);
+  box-shadow: 
+    inset 0 1px 1px 0 var(--glass-highlight-top),
+    inset 0 -1px 1px 0 var(--glass-highlight-bottom),
+    0 24px 48px -12px var(--glass-shadow);
+  transform: translateZ(0);
+}
+
+/* 2. Clear Variant - Ultra-translucent for floating media controls & overlays */
+.liquid-glass-clear {
+  background: var(--glass-bg-clear);
+  backdrop-filter: blur(20px) saturate(220%);
+  -webkit-backdrop-filter: blur(20px) saturate(220%);
+  border: 1px solid var(--glass-border-subtle);
+  box-shadow: 
+    inset 0 1px 1px 0 var(--glass-highlight-top),
+    inset 0 -1px 1px 0 var(--glass-highlight-bottom),
+    0 16px 32px -8px var(--glass-shadow);
+  transform: translateZ(0);
+}
+
+/* 3. Elevated Variant - For floating capsule headers, sheets, and popovers */
+.liquid-glass-elevated {
+  background: var(--glass-bg-elevated);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border: 1px solid var(--glass-border);
+  box-shadow: 
+    inset 0 1.5px 1.5px 0 var(--glass-highlight-top),
+    inset 0 -1px 1px 0 var(--glass-highlight-bottom),
+    0 28px 56px -14px var(--glass-shadow);
+  transform: translateZ(0);
+}
+
+/* 4. Interactive Variant - Responsive to touch and pointer with liquid sheen */
+.liquid-glass-interactive {
+  position: relative;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border: 1px solid var(--glass-border);
+  box-shadow: 
+    inset 0 1px 1px 0 var(--glass-highlight-top),
+    inset 0 -1px 1px 0 var(--glass-highlight-bottom),
+    0 24px 48px -12px var(--glass-shadow);
+  transition: transform 400ms var(--apple-spring),
+              box-shadow 400ms var(--apple-spring),
+              background-color 400ms var(--apple-spring),
+              border-color 400ms var(--apple-spring);
+  will-change: transform, box-shadow;
+  transform: translateZ(0);
+  overflow: hidden;
+}
+
+/* Fluid Liquid Sheen optical reflection sweep */
+.liquid-glass-interactive::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.16) 0%,
+    rgba(255, 255, 255, 0.04) 40%,
+    transparent 100%
+  );
+  opacity: 0;
+  transition: opacity 400ms var(--apple-spring);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.liquid-glass-interactive:hover {
+  transform: translateY(-3px) scale(1.005) translateZ(0);
+  box-shadow: 
+    inset 0 1.5px 1.5px 0 var(--glass-highlight-top),
+    inset 0 -1px 1px 0 var(--glass-highlight-bottom),
+    0 32px 64px -16px var(--glass-shadow-hover);
+  border-color: rgba(255, 255, 255, 0.90);
+}
+
+.liquid-glass-interactive:hover::before {
+  opacity: 1;
+}
+
+.dark .liquid-glass-interactive:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+/* 5. Capsule Pill Shape - Hardware-concentric rounded controls */
+.liquid-glass-pill {
+  position: relative;
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px) saturate(200%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
+  border: 1px solid var(--glass-border);
+  box-shadow: 
+    inset 0 1px 1px 0 var(--glass-highlight-top),
+    inset 0 -1px 1px 0 var(--glass-highlight-bottom),
+    0 12px 24px -8px var(--glass-shadow);
+  border-radius: 9999px;
+  transition: transform 300ms var(--apple-spring),
+              box-shadow 300ms var(--apple-spring),
+              background-color 300ms var(--apple-spring),
+              border-color 300ms var(--apple-spring);
+}
+
+.liquid-glass-pill:hover {
+  transform: translateY(-1.5px) scale(1.02);
+  border-color: rgba(255, 255, 255, 0.90);
+  box-shadow: 
+    inset 0 1.2px 1.2px 0 var(--glass-highlight-top),
+    inset 0 -1px 1px 0 var(--glass-highlight-bottom),
+    0 16px 32px -8px var(--glass-shadow-hover);
+}
+
+.dark .liquid-glass-pill:hover {
+  border-color: rgba(255, 255, 255, 0.30);
+}
+
+/* 6. Apple GlassEffectContainer - Coordinated Multi-View Optical Blending */
+.glass-effect-container {
+  position: relative;
+  border-radius: 1.5rem;
+  isolation: isolate;
+}
+
+/* 7. Tinted Glass Variants (Apple HIG glassEffect.tint) */
+.glass-tint-emerald {
+  background: color-mix(in oklch, var(--glass-bg), var(--sidogiri-emerald) 8%);
+  border-color: rgba(16, 185, 129, 0.30);
+}
+
+.dark .glass-tint-emerald {
+  background: color-mix(in oklch, var(--glass-bg), var(--sidogiri-emerald) 14%);
+  border-color: rgba(52, 211, 153, 0.22);
+}
+
+.glass-tint-gold {
+  background: color-mix(in oklch, var(--glass-bg), var(--sidogiri-gold) 8%);
+  border-color: rgba(245, 158, 11, 0.28);
+}
+
+.dark .glass-tint-gold {
+  background: color-mix(in oklch, var(--glass-bg), var(--sidogiri-gold) 14%);
+  border-color: rgba(245, 158, 11, 0.22);
+}
+
+/* AMBIENT LIQUID ORBS WITH GPU ACCELERATION & CONTINUOUS ORGANIC FLOW */
+.ambient-scene {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.liquid-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  animation-timing-function: cubic-bezier(0.45, 0.05, 0.55, 0.95);
+  animation-iteration-count: infinite;
+}
+
+.liquid-orb-1 {
+  width: 720px;
+  height: 720px;
+  top: -120px;
+  left: 3%;
+  background: radial-gradient(circle at 40% 40%, rgba(4, 120, 87, 0.50) 0%, rgba(5, 150, 105, 0.32) 42%, rgba(16, 185, 129, 0.14) 64%, transparent 74%);
+  animation: liquid-flow-1 28s infinite;
+}
+
+.dark .liquid-orb-1 {
+  background: radial-gradient(circle at 40% 40%, rgba(16, 185, 129, 0.56) 0%, rgba(5, 150, 105, 0.38) 45%, rgba(6, 78, 59, 0.26) 65%, transparent 78%);
+}
+
+.liquid-orb-2 {
+  width: 600px;
+  height: 600px;
+  top: 28%;
+  right: -50px;
+  background: radial-gradient(circle at 50% 50%, rgba(217, 119, 6, 0.32) 0%, rgba(245, 158, 11, 0.16) 45%, transparent 72%);
+  animation: liquid-flow-2 34s infinite;
+}
+
+.dark .liquid-orb-2 {
+  background: radial-gradient(circle at 50% 50%, rgba(245, 158, 11, 0.38) 0%, rgba(180, 83, 9, 0.20) 50%, transparent 75%);
+}
+
+.liquid-orb-3 {
+  width: 740px;
+  height: 740px;
+  bottom: -150px;
+  left: 12%;
+  background: radial-gradient(circle at 45% 45%, rgba(13, 148, 136, 0.44) 0%, rgba(16, 185, 129, 0.26) 46%, transparent 72%);
+  animation: liquid-flow-3 32s infinite;
+}
+
+.dark .liquid-orb-3 {
+  background: radial-gradient(circle at 45% 45%, rgba(20, 184, 166, 0.48) 0%, rgba(13, 148, 136, 0.30) 50%, transparent 78%);
+}
+
+.liquid-orb-4 {
+  width: 600px;
+  height: 600px;
+  top: 15%;
+  left: 45%;
+  background: radial-gradient(circle at 50% 50%, rgba(5, 150, 105, 0.40) 0%, rgba(52, 211, 153, 0.20) 50%, transparent 70%);
+  animation: liquid-flow-4 24s infinite;
+}
+
+.dark .liquid-orb-4 {
+  background: radial-gradient(circle at 50% 50%, rgba(52, 211, 153, 0.42) 0%, rgba(4, 120, 87, 0.24) 55%, transparent 75%);
+}
+
+/* Radiant organic fluid mesh connecting the aura */
+.liquid-mesh-flow {
+  position: absolute;
+  inset: -20%;
+  width: 140%;
+  height: 140%;
+  background: radial-gradient(ellipse at 45% 35%, rgba(5, 150, 105, 0.20), transparent 60%),
+              radial-gradient(ellipse at 80% 65%, rgba(217, 119, 6, 0.12), transparent 50%),
+              radial-gradient(ellipse at 20% 80%, rgba(16, 185, 129, 0.16), transparent 60%);
+  filter: blur(80px);
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  animation: mesh-swirl 45s infinite linear;
+  pointer-events: none;
+}
+
+.dark .liquid-mesh-flow {
+  background: radial-gradient(ellipse at 50% 40%, rgba(16, 185, 129, 0.24), transparent 60%),
+              radial-gradient(ellipse at 80% 70%, rgba(245, 158, 11, 0.15), transparent 50%),
+              radial-gradient(ellipse at 25% 75%, rgba(5, 150, 105, 0.20), transparent 60%);
+}
+
+@keyframes liquid-flow-1 {
+  0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+  25% { transform: translate3d(70px, 45px, 0) rotate(25deg) scale(1.08); }
+  50% { transform: translate3d(30px, 95px, 0) rotate(50deg) scale(0.96); }
+  75% { transform: translate3d(-50px, 50px, 0) rotate(20deg) scale(1.04); }
+  100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+}
+
+@keyframes liquid-flow-2 {
+  0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+  25% { transform: translate3d(-80px, -40px, 0) rotate(-30deg) scale(1.12); }
+  50% { transform: translate3d(-40px, 60px, 0) rotate(-60deg) scale(0.92); }
+  75% { transform: translate3d(30px, 20px, 0) rotate(-25deg) scale(1.06); }
+  100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+}
+
+@keyframes liquid-flow-3 {
+  0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+  25% { transform: translate3d(60px, -60px, 0) rotate(35deg) scale(1.06); }
+  50% { transform: translate3d(-60px, -30px, 0) rotate(70deg) scale(0.94); }
+  75% { transform: translate3d(-30px, 40px, 0) rotate(30deg) scale(1.08); }
+  100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+}
+
+@keyframes liquid-flow-4 {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  33% { transform: translate3d(-50px, 60px, 0) scale(1.10); }
+  66% { transform: translate3d(50px, -40px, 0) scale(0.92); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@keyframes mesh-swirl {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.05); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+/* SUBTLE ISLAMIC GEOMETRIC WATERMARK OVERLAY */
+.islamic-pattern {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%2310b981' fill-opacity='0.035' fill-rule='evenodd'%3E%3Cpath d='M40 0l40 40-40 40L0 40 40 0zm0 10l30 30-30 30-30-30 30-30zm0 10l20 20-20 20-20-20 20-20zm0 8l12 12-12 12-12-12 12-12zM0 0h8v8H0V0zm72 0h8v8h-8V0zM0 72h8v8H0v-8zm72 0h8v8h-8v-8z' /%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat;
+  opacity: 0.8;
+  z-index: 0;
+}
+
+.dark .islamic-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%2334d399' fill-opacity='0.025' fill-rule='evenodd'%3E%3Cpath d='M40 0l40 40-40 40L0 40 40 0zm0 10l30 30-30 30-30-30 30-30zm0 10l20 20-20 20-20-20 20-20zm0 8l12 12-12 12-12-12 12-12zM0 0h8v8H0V0zm72 0h8v8h-8V0zM0 72h8v8H0v-8zm72 0h8v8h-8v-8z' /%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* ELEGANT TYPOGRAPHIC GRADIENTS */
+.text-gradient-emerald {
+  background: linear-gradient(135deg, oklch(0.38 0.14 158) 0%, oklch(0.55 0.15 165) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.dark .text-gradient-emerald {
+  background: linear-gradient(135deg, oklch(0.85 0.12 162) 0%, oklch(0.65 0.14 165) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-gold {
+  background: linear-gradient(135deg, oklch(0.70 0.14 75) 0%, oklch(0.85 0.12 85) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.dark .text-gradient-gold {
+  background: linear-gradient(135deg, oklch(0.78 0.14 85) 0%, oklch(0.90 0.10 90) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* SHINE SHEEN EFFECT FOR BUTTONS AND CARDS */
+.liquid-sheen {
+  position: relative;
+  overflow: hidden;
+}
+
+.liquid-sheen::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+  transform: skewX(-20deg);
+  transition: left 750ms var(--apple-spring);
+  pointer-events: none;
+}
+
+.liquid-sheen:hover::after {
+  left: 150%;
+}
+
+/* GPU-ACCELERATED MENU & PAGE TRANSITIONS (APPLE LIQUID MOTION) */
+@keyframes page-enter {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0) scale(0.995);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.page-transition {
+  animation: page-enter 380ms var(--apple-spring) both;
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-transition {
+    animation: none;
+    transform: none;
+    filter: none;
+    opacity: 1;
+  }
 }
