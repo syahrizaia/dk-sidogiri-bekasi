@@ -2,9 +2,13 @@
 
 import "server-only";
 import { getDatabase } from "@/lib/mongodb";
+import { getSessionFromCookies } from "@/lib/auth";
+import { verifyUserPermission } from "@/lib/actions/roles";
 import { ObjectId } from "mongodb";
+import { serializeData } from "@/lib/utils";
 
 export interface MediaItem {
+  id?: string;
   _id: string;
   title: string;
   category: "Kegiatan Santri" | "Kajian Kitab Kuning" | "Prestasi" | "Fasilitas" | "Video Liputan";
@@ -17,6 +21,7 @@ export interface MediaItem {
   author: string;
   published: boolean;
   createdAt?: string;
+  updatedAt?: string;
 }
 
 const DEFAULT_MEDIA_SEEDS = [
@@ -127,7 +132,7 @@ export async function getMediaAction(all = false): Promise<{ success: boolean; d
       createdAt: m.createdAt,
     }));
 
-    return { success: true, data: formatted };
+    return { success: true, data: serializeData(formatted) };
   } catch (error) {
     console.error("Error in getMediaAction:", error);
     return { success: false, error: "Gagal memuat arsip media." };
@@ -147,6 +152,11 @@ export async function createMediaAction(payload: {
   published?: boolean;
 }) {
   try {
+    const authCheck = await verifyUserPermission("media", "create");
+    if (!authCheck.allowed) {
+      return { success: false, error: authCheck.error || "Akses ditolak: Anda tidak memiliki wewenang untuk menambahkan dokumentasi media." };
+    }
+
     const { title, category, type, url, thumbnail, duration, description, date, author, published } = payload;
     if (!title || !category || !url) {
       return { success: false, error: "Judul, kategori, dan tautan media wajib diisi." };
@@ -173,7 +183,7 @@ export async function createMediaAction(payload: {
     return {
       success: true,
       message: "Dokumentasi media berhasil ditambahkan.",
-      data: { ...newMedia, _id: result.insertedId.toString() },
+      data: serializeData({ ...newMedia, _id: result.insertedId.toString() }),
     };
   } catch (error) {
     console.error("Error in createMediaAction:", error);
@@ -183,6 +193,11 @@ export async function createMediaAction(payload: {
 
 export async function deleteMediaAction(id: string) {
   try {
+    const authCheck = await verifyUserPermission("media", "delete");
+    if (!authCheck.allowed) {
+      return { success: false, error: authCheck.error || "Akses ditolak: Anda tidak memiliki wewenang untuk menghapus dokumentasi media." };
+    }
+
     if (!id) {
       return { success: false, error: "ID media tidak disertakan." };
     }
@@ -204,5 +219,65 @@ export async function deleteMediaAction(id: string) {
   } catch (error) {
     console.error("Error in deleteMediaAction:", error);
     return { success: false, error: "Gagal menghapus dokumentasi media." };
+  }
+}
+
+export async function updateMediaAction(
+  id: string,
+  payload: {
+    title?: string;
+    category?: "Kegiatan Santri" | "Kajian Kitab Kuning" | "Prestasi" | "Fasilitas" | "Video Liputan";
+    type?: "image" | "video";
+    url?: string;
+    thumbnail?: string;
+    duration?: string;
+    description?: string;
+    date?: string;
+    author?: string;
+    published?: boolean;
+  }
+) {
+  try {
+    const authCheck = await verifyUserPermission("media", "update");
+    if (!authCheck.allowed) {
+      return { success: false, error: authCheck.error || "Akses ditolak: Anda tidak memiliki wewenang untuk memperbarui dokumentasi media." };
+    }
+
+    if (!id) {
+      return { success: false, error: "ID media tidak disertakan." };
+    }
+
+    const db = await getDatabase();
+    const mediaCollection = db.collection("media");
+
+    let query: Record<string, unknown> = { id };
+    if (ObjectId.isValid(id)) {
+      query = { $or: [{ _id: new ObjectId(id) }, { id }] };
+    }
+
+    const updateFields: Record<string, unknown> = {
+      updatedAt: new Date().toISOString(),
+    };
+
+    if (payload.title) updateFields.title = String(payload.title).trim();
+    if (payload.category) updateFields.category = payload.category;
+    if (payload.type) updateFields.type = payload.type;
+    if (payload.url) updateFields.url = String(payload.url).trim();
+    if (payload.thumbnail !== undefined) updateFields.thumbnail = String(payload.thumbnail).trim();
+    if (payload.duration !== undefined) updateFields.duration = String(payload.duration).trim();
+    if (payload.description) updateFields.description = String(payload.description).trim();
+    if (payload.date) updateFields.date = String(payload.date).trim();
+    if (payload.author) updateFields.author = String(payload.author).trim();
+    if (payload.published !== undefined) updateFields.published = payload.published;
+
+    const result = await mediaCollection.updateOne(query, { $set: updateFields });
+    if (result.matchedCount === 0) {
+      return { success: false, error: "Media tidak ditemukan." };
+    }
+
+    return { success: true, message: "Dokumentasi media berhasil diperbarui." };
+  } catch (error) {
+    console.error("Error in updateMediaAction:", error);
+    return { success: false, error: "Gagal memperbarui dokumentasi media." };
   }
 }

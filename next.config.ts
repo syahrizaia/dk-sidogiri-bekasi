@@ -4,9 +4,10 @@ const cspHeader = `
     default-src 'self';
     script-src 'self' 'unsafe-eval' 'unsafe-inline';
     style-src 'self' 'unsafe-inline';
-    img-src 'self' blob: data: https://images.unsplash.com https://*.unsplash.com;
+    img-src 'self' blob: data: https: https://images.unsplash.com https://*.unsplash.com;
     font-src 'self' data:;
     connect-src 'self';
+    frame-src 'self' https://www.youtube.com https://*.youtube.com https://youtu.be;
     frame-ancestors 'none';
     object-src 'none';
     base-uri 'self';

@@ -4,6 +4,8 @@ import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getCurrentUserAction, logoutAction } from "@/lib/actions/auth";
+import { getUserPermissionsAction, type UserPermissionsResult } from "@/lib/actions/roles";
+import type { ModulePermissionKey } from "@/lib/roles-config";
 import {
   Users,
   UserCheck,
@@ -28,12 +30,20 @@ import {
   BedDouble,
   Video
 } from "lucide-react";
+import { ParentPortalView } from "./components/ParentPortalView";
+import { TeacherPortalView } from "./components/TeacherPortalView";
+import { ExecutivePortalView } from "./components/ExecutivePortalView";
+import { StaffPortalView } from "./components/StaffPortalView";
 
 interface UserProfile {
   id: string;
   name: string;
   email: string;
   role: string;
+  studentNis?: string;
+  studentName?: string;
+  studentId?: string;
+  parentId?: string;
 }
 
 interface ModuleItem {
@@ -89,7 +99,7 @@ const MODULES_LIST: ModuleItem[] = [
     subtitle: "Miftahul Ulum - Tingkat Dasar",
     description: "Jenjang pendidikan dasar setara SD bercirikan Islam khas Sidogiri yang mengintegrasikan kurikulum agama dan umum terpadu.",
     category: "institution",
-    href: "/instansi/mi",
+    href: "/modules/mi",
     icon: BookOpen,
     badge: { text: "Beroperasi Aktif", variant: "emerald" },
   },
@@ -99,7 +109,7 @@ const MODULES_LIST: ModuleItem[] = [
     subtitle: "Miftahul Ulum - Persiapan Pembukaan",
     description: "Jenjang pendidikan lanjutan tingkat menengah pertama dengan penguatan ilmu syariah. Buka resmi tahun ajaran baru mendatang.",
     category: "institution",
-    href: "/instansi/mts",
+    href: "/modules/mts",
     icon: Building2,
     badge: { text: "Buka Tahun Depan", variant: "teal" },
   },
@@ -109,7 +119,7 @@ const MODULES_LIST: ModuleItem[] = [
     subtitle: "Taman Pendidikan Al-Qur'an",
     description: "Pendidikan tartil Al-Qur'an 6 jilid dengan sanad metode khas Pondok Pesantren Sidogiri Pasuruan, mencetak generasi fasih dan mutqin.",
     category: "institution",
-    href: "/instansi/tpq",
+    href: "/modules/tpq",
     icon: Compass,
     badge: { text: "Metode Tartil", variant: "amber" },
   },
@@ -178,6 +188,7 @@ const MODULES_LIST: ModuleItem[] = [
 export default function ModulesPage() {
   const router = useRouter();
   const [user, setUser] = useState<UserProfile | null>(null);
+  const [userPermissions, setUserPermissions] = useState<UserPermissionsResult | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
   const [loggingOut, setLoggingOut] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -185,9 +196,12 @@ export default function ModulesPage() {
   const [currentTime, setCurrentTime] = useState<string>("");
 
   useEffect(() => {
-    // Ambil data user yang sedang login via Server Action (zero network exposure)
-    getCurrentUserAction()
-      .then((userSession) => {
+    // Ambil data user yang sedang login dan izin RBAC dinamis dari database
+    Promise.all([
+      getCurrentUserAction(),
+      getUserPermissionsAction(),
+    ])
+      .then(([userSession, permsRes]) => {
         if (userSession) {
           setUser(userSession);
         } else {
@@ -198,6 +212,9 @@ export default function ModulesPage() {
             email: "pengguna@sidogiri-bekasi.sch.id",
             role: "staff",
           });
+        }
+        if (permsRes.success && permsRes.data) {
+          setUserPermissions(permsRes.data);
         }
       })
       .catch(() => {
@@ -241,8 +258,52 @@ export default function ModulesPage() {
     }
   };
 
+  const [previewRole, setPreviewRole] = useState<
+    "actual" | "super_admin" | "ketua_ranting" | "staf_administrasi" | "dewan_asatidz" | "wali_santri"
+  >("actual");
+  const isSuperAdmin = user?.role === "super_admin" || user?.role === "admin";
+  const effectiveRole = previewRole !== "actual" && isSuperAdmin ? previewRole : user?.role?.toLowerCase();
+
+  const getModulePermissionKey = (modId: string): ModulePermissionKey | null => {
+    switch (modId) {
+      case "students": return "students";
+      case "teachers": return "teachers";
+      case "parents": return "parents";
+      case "mi": return "mi";
+      case "mts": return "mts";
+      case "tpq": return "tpq";
+      case "data-science": return "data_science";
+      case "dormitory": return "dormitory";
+      case "media-management": return "media";
+      case "users-management": return "users";
+      case "settings": return "settings";
+      default: return null;
+    }
+  };
+
   const filteredModules = useMemo(() => {
     return MODULES_LIST.filter((mod) => {
+      const modKey = getModulePermissionKey(mod.id);
+
+      if (modKey) {
+        // Root Security Failsafe: users-management hanya bisa dilihat super_admin
+        if (modKey === "users" && !isSuperAdmin && !userPermissions?.isSuperAdmin) {
+          return false;
+        }
+
+        // Saring 100% dinamis berdasarkan izin matriks RBAC dari database
+        if (userPermissions?.permissions) {
+          if (!userPermissions.permissions[modKey]) {
+            return false;
+          }
+        } else {
+          // Fallback awal sebelum database permissions termuat
+          if (modKey === "users" && !isSuperAdmin) {
+            return false;
+          }
+        }
+      }
+
       const matchSearch =
         mod.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         mod.subtitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -251,7 +312,7 @@ export default function ModulesPage() {
       if (activeTab === "all") return matchSearch;
       return matchSearch && mod.category === activeTab;
     });
-  }, [searchQuery, activeTab]);
+  }, [searchQuery, activeTab, isSuperAdmin, userPermissions]);
 
   const getBadgeClass = (variant: ModuleItem["badge"]["variant"]) => {
     switch (variant) {
@@ -273,17 +334,153 @@ export default function ModulesPage() {
 
   const getRoleLabel = (role?: string) => {
     switch (role?.toLowerCase()) {
+      case "super_admin":
       case "admin":
-        return "Administrator Utama";
+        return "Super Admin";
+      case "ketua_ranting":
+      case "ketua":
+      case "ketua_yayasan":
+        return "Ketua Ranting";
+      case "staf_administrasi":
+      case "staf":
+      case "staff":
+        return "Staf Administrasi";
+      case "dewan_asatidz":
+      case "guru":
       case "teacher":
-        return "Dewan Asatidz / Guru";
+        return "Dewan Asatidz";
+      case "wali_santri":
+      case "orang_tua":
       case "parent":
         return "Wali Santri";
-      case "staff":
       default:
-        return "Staff Administrasi";
+        return "Staf Administrasi";
     }
   };
+
+  // 1. Tampilan Khusus Wali Santri
+  if (!loadingUser && (effectiveRole === "wali_santri" || effectiveRole === "orang_tua" || effectiveRole === "parent")) {
+    return (
+      <div className="relative">
+        {isSuperAdmin && (
+          <div className="sticky top-16 z-30 p-2.5 mx-auto max-w-7xl px-4">
+            <div className="rounded-2xl bg-amber-500/20 border border-amber-500/40 p-2.5 flex items-center justify-between text-xs font-semibold backdrop-blur-md">
+              <span className="flex items-center gap-2 text-amber-900 dark:text-amber-200">
+                <Sparkles size={14} />
+                <span>Mode Pratinjau Tampilan: <strong>Wali Santri</strong></span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setPreviewRole("actual")}
+                className="px-3 py-1 rounded-xl bg-amber-700 text-white text-[11px] font-bold hover:bg-amber-600 cursor-pointer transition-colors"
+              >
+                Kembali ke Super Admin
+              </button>
+            </div>
+          </div>
+        )}
+        <ParentPortalView 
+          user={user!} 
+          currentTime={currentTime} 
+          onLogout={handleLogout} 
+          loggingOut={loggingOut} 
+        />
+      </div>
+    );
+  }
+
+  // 2. Tampilan Khusus Dewan Asatidz / Guru
+  if (!loadingUser && (effectiveRole === "dewan_asatidz" || effectiveRole === "guru" || effectiveRole === "teacher")) {
+    return (
+      <div className="relative">
+        {isSuperAdmin && (
+          <div className="sticky top-16 z-30 p-2.5 mx-auto max-w-7xl px-4">
+            <div className="rounded-2xl bg-teal-500/20 border border-teal-500/40 p-2.5 flex items-center justify-between text-xs font-semibold backdrop-blur-md">
+              <span className="flex items-center gap-2 text-teal-900 dark:text-teal-200">
+                <Sparkles size={14} />
+                <span>Mode Pratinjau Tampilan: <strong>Dewan Asatidz / Guru</strong></span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setPreviewRole("actual")}
+                className="px-3 py-1 rounded-xl bg-teal-700 text-white text-[11px] font-bold hover:bg-teal-600 cursor-pointer transition-colors"
+              >
+                Kembali ke Super Admin
+              </button>
+            </div>
+          </div>
+        )}
+        <TeacherPortalView 
+          user={user!} 
+          currentTime={currentTime} 
+          onLogout={handleLogout} 
+          loggingOut={loggingOut} 
+        />
+      </div>
+    );
+  }
+
+  // 3. Tampilan Khusus Eksekutif / Ketua Ranting
+  if (!loadingUser && (effectiveRole === "ketua_ranting" || effectiveRole === "ketua" || effectiveRole === "ketua_yayasan")) {
+    return (
+      <div className="relative">
+        {isSuperAdmin && (
+          <div className="sticky top-16 z-30 p-2.5 mx-auto max-w-7xl px-4">
+            <div className="rounded-2xl bg-emerald-500/20 border border-emerald-500/40 p-2.5 flex items-center justify-between text-xs font-semibold backdrop-blur-md">
+              <span className="flex items-center gap-2 text-emerald-900 dark:text-emerald-200">
+                <Sparkles size={14} />
+                <span>Mode Pratinjau Tampilan: <strong>Ketua Ranting (Eksekutif)</strong></span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setPreviewRole("actual")}
+                className="px-3 py-1 rounded-xl bg-emerald-700 text-white text-[11px] font-bold hover:bg-emerald-600 cursor-pointer transition-colors"
+              >
+                Kembali ke Super Admin
+              </button>
+            </div>
+          </div>
+        )}
+        <ExecutivePortalView 
+          user={user!} 
+          currentTime={currentTime} 
+          onLogout={handleLogout} 
+          loggingOut={loggingOut} 
+        />
+      </div>
+    );
+  }
+
+  // 4. Tampilan Khusus Staf Administrasi
+  if (!loadingUser && (effectiveRole === "staf_administrasi" || effectiveRole === "staf" || effectiveRole === "staff")) {
+    return (
+      <div className="relative">
+        {isSuperAdmin && (
+          <div className="sticky top-16 z-30 p-2.5 mx-auto max-w-7xl px-4">
+            <div className="rounded-2xl bg-indigo-500/20 border border-indigo-500/40 p-2.5 flex items-center justify-between text-xs font-semibold backdrop-blur-md">
+              <span className="flex items-center gap-2 text-indigo-900 dark:text-indigo-200">
+                <Sparkles size={14} />
+                <span>Mode Pratinjau Tampilan: <strong>Staf Administrasi (Operasional)</strong></span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setPreviewRole("actual")}
+                className="px-3 py-1 rounded-xl bg-indigo-700 text-white text-[11px] font-bold hover:bg-indigo-600 cursor-pointer transition-colors"
+              >
+                Kembali ke Super Admin
+              </button>
+            </div>
+          </div>
+        )}
+        <StaffPortalView 
+          user={user!} 
+          currentTime={currentTime} 
+          onLogout={handleLogout} 
+          loggingOut={loggingOut} 
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-h-screen py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
@@ -335,21 +532,90 @@ export default function ModulesPage() {
             </div>
           </div>
 
-          {/* Quick Action Buttons */}
-          <div className="flex flex-wrap items-center gap-3 self-end lg:self-center">
+          {/* Quick Action Buttons & Role Preview Toggle */}
+          <div className="flex flex-wrap items-center gap-2.5 self-end lg:self-center">
+            {isSuperAdmin && (
+              <div className="flex items-center gap-1 p-1 rounded-2xl liquid-glass border border-white/50 text-[11px] font-semibold">
+                <span className="text-muted-foreground px-2 hidden sm:inline flex items-center gap-1">
+                  <Sparkles size={12} className="text-emerald-600" />
+                  <span>Pratinjau:</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setPreviewRole("actual")}
+                  className={`px-2.5 py-1 rounded-xl transition-all cursor-pointer ${
+                    previewRole === "actual" || previewRole === "super_admin"
+                      ? "bg-rose-500/20 text-rose-700 dark:text-rose-300 font-bold shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                  title="Lihat Dashboard Super Admin"
+                >
+                  Admin
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewRole("ketua_ranting")}
+                  className={`px-2.5 py-1 rounded-xl transition-all cursor-pointer ${
+                    previewRole === "ketua_ranting"
+                      ? "bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 font-bold shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                  title="Pratinjau Tampilan Eksekutif Ketua Ranting"
+                >
+                  Ketua
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewRole("staf_administrasi")}
+                  className={`px-2.5 py-1 rounded-xl transition-all cursor-pointer ${
+                    previewRole === "staf_administrasi"
+                      ? "bg-indigo-500/20 text-indigo-800 dark:text-indigo-300 font-bold shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                  title="Pratinjau Tampilan Operasional Staf Administrasi"
+                >
+                  Staf
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewRole("dewan_asatidz")}
+                  className={`px-2.5 py-1 rounded-xl transition-all cursor-pointer ${
+                    previewRole === "dewan_asatidz"
+                      ? "bg-teal-500/20 text-teal-800 dark:text-teal-300 font-bold shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                  title="Pratinjau Tampilan Dewan Asatidz / Guru"
+                >
+                  Guru
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewRole("wali_santri")}
+                  className={`px-2.5 py-1 rounded-xl transition-all cursor-pointer ${
+                    previewRole === "wali_santri"
+                      ? "bg-amber-500/20 text-amber-800 dark:text-amber-300 font-bold shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                  title="Pratinjau Tampilan Wali Santri"
+                >
+                  Wali
+                </button>
+              </div>
+            )}
+
             <Link
               href="/"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl liquid-glass-pill hover:bg-white/40 dark:hover:bg-white/10 text-xs font-semibold text-foreground transition-all duration-200"
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl liquid-glass-pill hover:bg-white/40 dark:hover:bg-white/10 text-xs font-semibold text-foreground transition-all duration-200"
             >
-              <ExternalLink size={14} className="text-emerald-600 dark:text-emerald-400" />
+              <ExternalLink size={13} className="text-emerald-600 dark:text-emerald-400" />
               <span>Halaman Utama</span>
             </Link>
 
             <Link
               href="/settings"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl liquid-glass-pill hover:bg-white/40 dark:hover:bg-white/10 text-xs font-semibold text-foreground transition-all duration-200"
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl liquid-glass-pill hover:bg-white/40 dark:hover:bg-white/10 text-xs font-semibold text-foreground transition-all duration-200"
             >
-              <Settings size={14} className="text-teal-600 dark:text-teal-400" />
+              <Settings size={13} className="text-teal-600 dark:text-teal-400" />
               <span>Pengaturan</span>
             </Link>
 
@@ -357,10 +623,10 @@ export default function ModulesPage() {
               type="button"
               onClick={handleLogout}
               disabled={loggingOut}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-700 dark:text-rose-300 border border-rose-500/30 text-xs font-semibold transition-all duration-200 active:scale-95 cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-700 dark:text-rose-300 border border-rose-500/30 text-xs font-semibold transition-all duration-200 active:scale-95 cursor-pointer disabled:opacity-50"
             >
-              <LogOut size={14} />
-              <span>{loggingOut ? "Keluar..." : "Keluar Sesi"}</span>
+              <LogOut size={13} />
+              <span>{loggingOut ? "Keluar..." : "Keluar"}</span>
             </button>
           </div>
         </div>

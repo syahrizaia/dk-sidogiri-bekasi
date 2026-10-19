@@ -195,7 +195,7 @@ export default function RootLayout({
             <div className="islamic-pattern" />
           </div>
 
-          <div className="relative z-10 flex min-h-screen flex-col">
+          <div className="relative z-10 flex min-h-screen flex-col w-full max-w-full overflow-x-clip">
             {children}
           </div>
         </ThemeProvider>

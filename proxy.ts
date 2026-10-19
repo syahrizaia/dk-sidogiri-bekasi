@@ -17,13 +17,16 @@ const protectedRoutes = [
 // Rute autentikasi publik (jika sudah login, redirect langsung ke /modules)
 const authRoutes = [
   "/auth/login",
-  "/auth/register",
   "/login",
-  "/register",
 ];
 
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
+
+  // Redirect pendaftaran akun langsung ke /auth/login karena seluruh akun dibuat oleh Super Admin
+  if (pathname === "/register" || pathname === "/auth/register" || pathname.startsWith("/auth/register/")) {
+    return NextResponse.redirect(new URL("/auth/login", request.url));
+  }
 
   // 0. Defense Against NoSQL / Injection Payload in Search Query
   if (search) {
@@ -59,6 +62,45 @@ export function proxy(request: NextRequest) {
       const returnUrl = encodeURIComponent(`${pathname}${search}`);
       const loginUrl = new URL(`/auth/login?redirect=${returnUrl}`, request.url);
       return NextResponse.redirect(loginUrl);
+    }
+
+    // Strict RBAC Route Guards:
+    // 1. Modul Manajemen Pengguna (/modules/users) HANYA BISA DIAKSES oleh Super Admin
+    if (pathname === "/modules/users" || pathname.startsWith("/modules/users/")) {
+      if (session.role !== "super_admin") {
+        return NextResponse.redirect(new URL("/modules?error=unauthorized", request.url));
+      }
+    }
+
+    // 2. Pengaturan & Sistem (/settings, /pengaturan): HANYA Super Admin & Ketua Ranting
+    if (
+      pathname === "/settings" ||
+      pathname.startsWith("/settings/") ||
+      pathname === "/pengaturan" ||
+      pathname.startsWith("/pengaturan/")
+    ) {
+      if (session.role !== "super_admin" && session.role !== "ketua_ranting") {
+        return NextResponse.redirect(new URL("/modules?error=unauthorized", request.url));
+      }
+    }
+
+    // 3. Data Science & AI (/data-science): HANYA Super Admin & Ketua Ranting
+    if (pathname === "/data-science" || pathname.startsWith("/data-science/")) {
+      if (session.role !== "super_admin" && session.role !== "ketua_ranting") {
+        return NextResponse.redirect(new URL("/modules?error=unauthorized", request.url));
+      }
+    }
+
+    // 4. Direktori Tenaga Pendidik & Wali Santri (/teachers, /parents): DILARANG untuk Wali Santri
+    if (
+      pathname === "/teachers" ||
+      pathname.startsWith("/teachers/") ||
+      pathname === "/parents" ||
+      pathname.startsWith("/parents/")
+    ) {
+      if (session.role === "wali_santri") {
+        return NextResponse.redirect(new URL("/modules?error=unauthorized", request.url));
+      }
     }
   }
 

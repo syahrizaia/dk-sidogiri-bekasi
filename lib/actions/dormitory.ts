@@ -2,7 +2,10 @@
 
 import "server-only";
 import { getDatabase } from "@/lib/mongodb";
+import { getSessionFromCookies } from "@/lib/auth";
+import { verifyUserPermission } from "@/lib/actions/roles";
 import { ObjectId } from "mongodb";
+import { serializeData } from "@/lib/utils";
 
 export interface Resident {
   nis: string;
@@ -11,6 +14,7 @@ export interface Resident {
 }
 
 export interface DormitoryRoom {
+  id?: string;
   _id: string;
   roomNumber: string;
   roomName: string;
@@ -141,7 +145,7 @@ export async function getDormitoriesAction(): Promise<{ success: boolean; data?:
       updatedAt: r.updatedAt,
     }));
 
-    return { success: true, data: formatted };
+    return { success: true, data: serializeData(formatted) };
   } catch (error) {
     console.error("Error in getDormitoriesAction:", error);
     return { success: false, error: "Gagal memuat data asrama." };
@@ -159,6 +163,11 @@ export async function createDormitoryAction(payload: {
   securityStatus?: "Aman Terkunci" | "Standar";
 }) {
   try {
+    const authCheck = await verifyUserPermission("dormitory", "create");
+    if (!authCheck.allowed) {
+      return { success: false, error: authCheck.error || "Akses ditolak: Anda tidak memiliki wewenang untuk membuat kamar asrama baru." };
+    }
+
     const { roomNumber, roomName, complex, floor, capacity, facilities, cleanlinessStatus, securityStatus } = payload;
     if (!roomNumber || !roomName || !complex || !capacity) {
       return { success: false, error: "Nomor kamar, nama kamar, kompleks, dan kapasitas wajib diisi." };
@@ -185,7 +194,7 @@ export async function createDormitoryAction(payload: {
     return {
       success: true,
       message: "Kamar asrama berhasil ditambahkan.",
-      data: { ...newRoom, _id: result.insertedId.toString() },
+      data: serializeData({ ...newRoom, _id: result.insertedId.toString() }),
     };
   } catch (error) {
     console.error("Error in createDormitoryAction:", error);
@@ -200,6 +209,11 @@ export async function allocateResidentAction(payload: {
   studentClass: string;
 }) {
   try {
+    const authCheck = await verifyUserPermission("dormitory", "update");
+    if (!authCheck.allowed) {
+      return { success: false, error: authCheck.error || "Akses ditolak: Anda tidak memiliki wewenang untuk mengalokasikan penghuni asrama." };
+    }
+
     const { roomId, studentNis, studentName, studentClass } = payload;
     if (!roomId || !studentNis || !studentName) {
       return { success: false, error: "ID kamar, NIS, dan nama santri wajib diisi." };
@@ -246,5 +260,92 @@ export async function allocateResidentAction(payload: {
   } catch (error) {
     console.error("Error in allocateResidentAction:", error);
     return { success: false, error: "Gagal mengalokasikan santri." };
+  }
+}
+
+export async function updateDormitoryAction(
+  id: string,
+  payload: {
+    roomNumber?: string;
+    roomName?: string;
+    complex?: "Asrama Sayyid Sulaiman" | "Asrama Kiai Aminullah";
+    floor?: number;
+    capacity?: number;
+    facilities?: string[];
+    cleanlinessStatus?: "Sangat Bersih" | "Terawat" | "Perlu Perhatian";
+    securityStatus?: "Aman Terkunci" | "Standar";
+  }
+) {
+  try {
+    const authCheck = await verifyUserPermission("dormitory", "update");
+    if (!authCheck.allowed) {
+      return { success: false, error: authCheck.error || "Akses ditolak: Anda tidak memiliki wewenang untuk memperbarui data asrama." };
+    }
+
+    if (!id) {
+      return { success: false, error: "ID kamar tidak disertakan." };
+    }
+
+    const db = await getDatabase();
+    const dormCollection = db.collection("dormitories");
+
+    let query: Record<string, unknown> = { id };
+    if (ObjectId.isValid(id)) {
+      query = { $or: [{ _id: new ObjectId(id) }, { id }] };
+    }
+
+    const updateFields: Record<string, unknown> = {
+      updatedAt: new Date().toISOString(),
+    };
+
+    if (payload.roomNumber) updateFields.roomNumber = String(payload.roomNumber).trim().toUpperCase();
+    if (payload.roomName) updateFields.roomName = String(payload.roomName).trim();
+    if (payload.complex) updateFields.complex = payload.complex;
+    if (payload.floor !== undefined) updateFields.floor = Number(payload.floor);
+    if (payload.capacity !== undefined) updateFields.capacity = Number(payload.capacity);
+    if (payload.facilities !== undefined) updateFields.facilities = payload.facilities;
+    if (payload.cleanlinessStatus) updateFields.cleanlinessStatus = payload.cleanlinessStatus;
+    if (payload.securityStatus) updateFields.securityStatus = payload.securityStatus;
+
+    const result = await dormCollection.updateOne(query, { $set: updateFields });
+    if (result.matchedCount === 0) {
+      return { success: false, error: "Kamar tidak ditemukan." };
+    }
+
+    return { success: true, message: "Data kamar asrama berhasil diperbarui." };
+  } catch (error) {
+    console.error("Error in updateDormitoryAction:", error);
+    return { success: false, error: "Gagal memperbarui data asrama." };
+  }
+}
+
+export async function deleteDormitoryAction(id: string) {
+  try {
+    const authCheck = await verifyUserPermission("dormitory", "delete");
+    if (!authCheck.allowed) {
+      return { success: false, error: authCheck.error || "Akses ditolak: Anda tidak memiliki wewenang untuk menghapus kamar asrama." };
+    }
+
+    if (!id) {
+      return { success: false, error: "ID kamar tidak disertakan." };
+    }
+
+    const db = await getDatabase();
+    const dormCollection = db.collection("dormitories");
+
+    let query: Record<string, unknown> = { id };
+    if (ObjectId.isValid(id)) {
+      query = { $or: [{ _id: new ObjectId(id) }, { id }] };
+    }
+
+    const result = await dormCollection.deleteOne(query);
+    if (result.deletedCount === 0) {
+      return { success: false, error: "Kamar asrama tidak ditemukan." };
+    }
+
+    return { success: true, message: "Kamar asrama berhasil dihapus." };
+  } catch (error) {
+    console.error("Error in deleteDormitoryAction:", error);
+    return { success: false, error: "Gagal menghapus kamar asrama." };
   }
 }

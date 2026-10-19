@@ -2,9 +2,14 @@
 
 import "server-only";
 import { getDatabase } from "@/lib/mongodb";
+import { getSessionFromCookies } from "@/lib/auth";
+import { verifyUserPermission } from "@/lib/actions/roles";
+import { ObjectId } from "mongodb";
+import { serializeData } from "@/lib/utils";
 
 export interface SantriRecord {
   id?: string;
+  _id?: string;
   nis: string;
   nama: string;
   jenjang: "MI" | "MTs" | "TPQ";
@@ -14,18 +19,32 @@ export interface SantriRecord {
   kamar: string;
   wali: string;
   noHp: string;
+  parentRelation?: "Ayah" | "Ibu" | "Wali";
+  parentAddress?: string;
+  parentId?: string;
+  parentUserId?: string;
+  parentDetails?: {
+    id?: string;
+    _id?: string;
+    name?: string;
+    phone?: string;
+    relation?: string;
+    address?: string;
+    status?: string;
+  };
   createdAt?: string;
+  updatedAt?: string;
 }
 
 const defaultSantri: SantriRecord[] = [
-  { id: "1", nis: "2024.11.001", nama: "Ahmad Fawaid", jenjang: "MI", kelas: "6 Ibtidaiyah A", konsulat: "Bekasi Timur", status: "MUKIM", kamar: "Blok A - Kamar 04", wali: "H. Abdullah Syukri", noHp: "081234567890" },
-  { id: "2", nis: "2024.11.002", nama: "Muhammad Lutfi Hakim", jenjang: "MTs", kelas: "Persiapan 1 MTs", konsulat: "Tambun Selatan", status: "NON-MUKIM", kamar: "Non-Asrama (Tambun)", wali: "Ust. Miftahul Huda", noHp: "081398765432" },
-  { id: "3", nis: "2024.11.003", nama: "Zainal Abidin", jenjang: "MI", kelas: "5 Ibtidaiyah C", konsulat: "Cikarang Barat", status: "MUKIM", kamar: "Blok B - Kamar 12", wali: "Kyai Manshur", noHp: "085612348765" },
-  { id: "4", nis: "2024.11.004", nama: "Khoirul Anam", jenjang: "TPQ", kelas: "Jilid 6 Al-Qur'an", konsulat: "Mustikajaya", status: "NON-MUKIM", kamar: "Non-Asrama (Mustikajaya)", wali: "Bpk. Samsul Arifin", noHp: "087789012345" },
-  { id: "5", nis: "2024.11.005", nama: "Fauzan Nur Rahmat", jenjang: "MI", kelas: "4 Ibtidaiyah B", konsulat: "Rawalumbu", status: "MUKIM", kamar: "Blok A - Kamar 08", wali: "Ir. H. Gunawan", noHp: "081233445566" },
-  { id: "6", nis: "2024.11.006", nama: "Ilham Ramadhan", jenjang: "MTs", kelas: "Persiapan 1 MTs", konsulat: "DKI Jakarta", status: "MUKIM", kamar: "Blok B - Kamar 02", wali: "Dr. Bambang Sutrisno", noHp: "081566778899" },
-  { id: "7", nis: "2024.11.007", nama: "Ali Zainal Musthofa", jenjang: "MI", kelas: "6 Ibtidaiyah A", konsulat: "Bekasi Utara", status: "MUKIM", kamar: "Blok A - Kamar 09", wali: "H. Abdul Wahab", noHp: "081822334455" },
-  { id: "8", nis: "2024.11.008", nama: "Hasan Bisri", jenjang: "TPQ", kelas: "Tartil Tajwid", konsulat: "Pondok Gede", status: "NON-MUKIM", kamar: "Non-Asrama (Pondok Gede)", wali: "Bpk. Sukron Ma'mun", noHp: "082199887766" },
+  { id: "1", nis: "2024.11.001", nama: "Ahmad Fawaid", jenjang: "MI", kelas: "6 Ibtidaiyah A", konsulat: "Bekasi Timur", status: "MUKIM", kamar: "Blok A - Kamar 04", wali: "H. Abdullah Syukri", noHp: "0812-3456-7890", parentRelation: "Ayah", parentAddress: "Bekasi Timur, Kota Bekasi" },
+  { id: "2", nis: "2024.11.002", nama: "Muhammad Lutfi Hakim", jenjang: "MTs", kelas: "Persiapan 1 MTs", konsulat: "Tambun Selatan", status: "NON-MUKIM", kamar: "Non-Asrama (Tambun)", wali: "Ust. Miftahul Huda", noHp: "0813-9876-5432", parentRelation: "Ayah", parentAddress: "Tambun Selatan, Kab. Bekasi" },
+  { id: "3", nis: "2024.11.003", nama: "Zainal Abidin", jenjang: "MI", kelas: "5 Ibtidaiyah C", konsulat: "Cikarang Barat", status: "MUKIM", kamar: "Blok B - Kamar 12", wali: "Hj. Siti Aminah", noHp: "0813-8765-4302", parentRelation: "Ibu", parentAddress: "Cikarang Barat, Kab. Bekasi" },
+  { id: "4", nis: "2024.11.004", nama: "Khoirul Anam", jenjang: "TPQ", kelas: "Jilid 6 Al-Qur'an", konsulat: "Mustikajaya", status: "NON-MUKIM", kamar: "Non-Asrama (Mustikajaya)", wali: "Bpk. Samsul Arifin", noHp: "0877-8901-2345", parentRelation: "Ayah", parentAddress: "Mustikajaya, Kota Bekasi" },
+  { id: "5", nis: "2024.11.005", nama: "Fauzan Nur Rahmat", jenjang: "MI", kelas: "4 Ibtidaiyah B", konsulat: "Rawalumbu", status: "MUKIM", kamar: "Blok A - Kamar 08", wali: "Ir. H. Gunawan", noHp: "0812-3344-5566", parentRelation: "Ayah", parentAddress: "Rawalumbu, Kota Bekasi" },
+  { id: "6", nis: "2024.11.006", nama: "Ilham Ramadhan", jenjang: "MTs", kelas: "Persiapan 1 MTs", konsulat: "DKI Jakarta", status: "MUKIM", kamar: "Blok B - Kamar 02", wali: "Dr. Bambang Sutrisno", noHp: "0815-6677-8899", parentRelation: "Wali", parentAddress: "DKI Jakarta Timur" },
+  { id: "7", nis: "2024.11.007", nama: "Ali Zainal Musthofa", jenjang: "MI", kelas: "6 Ibtidaiyah A", konsulat: "Bekasi Utara", status: "MUKIM", kamar: "Blok A - Kamar 09", wali: "H. Abdul Wahab", noHp: "0818-2233-4455", parentRelation: "Ayah", parentAddress: "Bekasi Utara, Kota Bekasi" },
+  { id: "8", nis: "2024.11.008", nama: "Hasan Bisri", jenjang: "TPQ", kelas: "Tartil Tajwid", konsulat: "Pondok Gede", status: "NON-MUKIM", kamar: "Non-Asrama (Pondok Gede)", wali: "Bpk. Sukron Ma'mun", noHp: "0821-9988-7766", parentRelation: "Ayah", parentAddress: "Pondok Gede, Kota Bekasi" },
 ];
 
 export async function getStudentsAction(params?: {
@@ -40,6 +59,7 @@ export async function getStudentsAction(params?: {
 
     const db = await getDatabase();
     const collection = db.collection<SantriRecord>("santri");
+    const parentsCollection = db.collection("parents");
 
     const count = await collection.countDocuments();
     if (count === 0) {
@@ -59,16 +79,54 @@ export async function getStudentsAction(params?: {
         { nis: { $regex: search, $options: "i" } },
         { konsulat: { $regex: search, $options: "i" } },
         { kamar: { $regex: search, $options: "i" } },
+        { wali: { $regex: search, $options: "i" } },
       ];
     }
 
-    const data = await collection.find(query).toArray();
-    const formatted = data.map((d) => ({
-      ...d,
-      id: d._id ? d._id.toString() : d.id || d.nis,
-    }));
+    const [data, parentsList] = await Promise.all([
+      collection.find(query).toArray(),
+      parentsCollection.find({}).toArray(),
+    ]);
 
-    return { success: true, data: formatted };
+    const formatted: SantriRecord[] = data.map((d) => {
+      // Cari relasi wali santri yang cocok
+      const matchedParent = parentsList.find(
+        (p) =>
+          (p.studentNis && d.nis && p.studentNis.trim().toUpperCase() === d.nis.trim().toUpperCase()) ||
+          (p.studentName && d.nama && p.studentName.trim().toLowerCase() === d.nama.trim().toLowerCase()) ||
+          (p.name && d.wali && p.name.trim().toLowerCase() === d.wali.trim().toLowerCase())
+      );
+
+      return {
+        id: d._id ? d._id.toString() : (d.id || d.nis),
+        nis: d.nis,
+        nama: d.nama,
+        jenjang: d.jenjang,
+        kelas: d.kelas,
+        konsulat: d.konsulat,
+        status: d.status,
+        kamar: d.kamar,
+        wali: d.wali || matchedParent?.name || "",
+        noHp: d.noHp || matchedParent?.phone || "",
+        parentRelation: (d.parentRelation || matchedParent?.relation || "Wali") as "Ayah" | "Ibu" | "Wali",
+        parentAddress: d.parentAddress || matchedParent?.address || "",
+        parentId: (d.parentId ? String(d.parentId) : undefined) || (matchedParent?._id ? matchedParent._id.toString() : undefined),
+        parentUserId: d.parentUserId ? String(d.parentUserId) : undefined,
+        parentDetails: matchedParent
+          ? {
+              id: matchedParent._id ? matchedParent._id.toString() : undefined,
+              name: matchedParent.name,
+              phone: matchedParent.phone,
+              relation: matchedParent.relation,
+              address: matchedParent.address,
+              status: matchedParent.status,
+            }
+          : undefined,
+        createdAt: d.createdAt ? String(d.createdAt) : undefined,
+      };
+    });
+
+    return { success: true, data: serializeData(formatted) };
   } catch (error) {
     console.error("Error in getStudentsAction:", error);
     return { success: false, error: "Gagal mengambil data santri." };
@@ -77,12 +135,18 @@ export async function getStudentsAction(params?: {
 
 export async function createStudentAction(payload: SantriRecord) {
   try {
+    const authCheck = await verifyUserPermission("students", "create");
+    if (!authCheck.allowed) {
+      return { success: false, error: authCheck.error || "Akses ditolak: Anda tidak memiliki wewenang untuk menambahkan santri baru." };
+    }
+
     if (!payload.nis || !payload.nama || !payload.jenjang) {
       return { success: false, error: "NIS, Nama Santri, dan Jenjang wajib diisi." };
     }
 
     const db = await getDatabase();
     const collection = db.collection<SantriRecord>("santri");
+    const parentsCollection = db.collection("parents");
 
     const newRecord: SantriRecord = {
       ...payload,
@@ -90,13 +154,122 @@ export async function createStudentAction(payload: SantriRecord) {
     };
 
     const result = await collection.insertOne(newRecord);
+
+    // Sinkronisasi otomatis ke koleksi Wali Santri jika ada data wali
+    if (payload.wali) {
+      await parentsCollection.updateOne(
+        { studentNis: payload.nis },
+        {
+          $set: {
+            name: payload.wali,
+            phone: payload.noHp || "",
+            studentName: payload.nama,
+            studentNis: payload.nis,
+            studentInstitution: payload.jenjang,
+            relation: payload.parentRelation || "Wali",
+            address: payload.parentAddress || payload.konsulat || "",
+            status: "AKTIF",
+            updatedAt: new Date().toISOString(),
+          },
+          $setOnInsert: {
+            createdAt: new Date().toISOString(),
+          },
+        },
+        { upsert: true }
+      );
+    }
+
     return {
       success: true,
-      message: "Data santri berhasil ditambahkan.",
-      data: { ...newRecord, id: result.insertedId.toString() },
+      message: "Data santri berhasil ditambahkan dan disinkronkan dengan data wali santri.",
+      data: serializeData({
+        id: result.insertedId.toString(),
+        nis: newRecord.nis,
+        nama: newRecord.nama,
+        jenjang: newRecord.jenjang,
+        kelas: newRecord.kelas,
+        konsulat: newRecord.konsulat,
+        status: newRecord.status,
+        kamar: newRecord.kamar,
+        wali: newRecord.wali,
+        noHp: newRecord.noHp,
+        createdAt: newRecord.createdAt,
+      }),
     };
   } catch (error) {
     console.error("Error in createStudentAction:", error);
     return { success: false, error: "Gagal menyimpan data santri." };
+  }
+}
+
+export async function updateStudentAction(id: string, payload: Partial<SantriRecord>) {
+  try {
+    const authCheck = await verifyUserPermission("students", "update");
+    if (!authCheck.allowed) {
+      return { success: false, error: authCheck.error || "Akses ditolak: Anda tidak memiliki wewenang untuk mengubah data santri." };
+    }
+
+    if (!id) {
+      return { success: false, error: "ID santri tidak valid." };
+    }
+
+    const db = await getDatabase();
+    const collection = db.collection<SantriRecord>("santri");
+    const parentsCollection = db.collection("parents");
+
+    let query: Record<string, unknown> = { id };
+    if (ObjectId.isValid(id)) {
+      query = { $or: [{ _id: new ObjectId(id) }, { id }, { nis: id }] };
+    } else {
+      query = { $or: [{ id }, { nis: id }] };
+    }
+
+    const updateFields: Record<string, unknown> = {
+      updatedAt: new Date().toISOString(),
+    };
+
+    if (payload.nama) updateFields.nama = String(payload.nama).trim();
+    if (payload.nis) updateFields.nis = String(payload.nis).trim();
+    if (payload.jenjang) updateFields.jenjang = payload.jenjang;
+    if (payload.kelas) updateFields.kelas = String(payload.kelas).trim();
+    if (payload.konsulat) updateFields.konsulat = String(payload.konsulat).trim();
+    if (payload.status) updateFields.status = payload.status;
+    if (payload.kamar) updateFields.kamar = String(payload.kamar).trim();
+    if (payload.wali) updateFields.wali = String(payload.wali).trim();
+    if (payload.noHp) updateFields.noHp = String(payload.noHp).trim();
+    if (payload.parentRelation) updateFields.parentRelation = payload.parentRelation;
+    if (payload.parentAddress !== undefined) updateFields.parentAddress = String(payload.parentAddress).trim();
+
+    const result = await collection.updateOne(query, { $set: updateFields });
+    if (result.matchedCount === 0) {
+      return { success: false, error: "Data santri tidak ditemukan." };
+    }
+
+    // Ambil data santri terbaru untuk sinkronisasi balik ke parents
+    const updatedSantri = await collection.findOne(query);
+    if (updatedSantri && (payload.wali || payload.noHp || payload.nama || payload.parentRelation || payload.parentAddress !== undefined)) {
+      await parentsCollection.updateOne(
+        { $or: [{ studentNis: updatedSantri.nis }, { studentName: updatedSantri.nama }] },
+        {
+          $set: {
+            name: updatedSantri.wali,
+            phone: updatedSantri.noHp,
+            studentName: updatedSantri.nama,
+            studentNis: updatedSantri.nis,
+            studentInstitution: updatedSantri.jenjang,
+            relation: payload.parentRelation || updatedSantri.parentRelation || "Wali",
+            address: payload.parentAddress !== undefined ? payload.parentAddress : (updatedSantri.parentAddress || updatedSantri.konsulat),
+            status: "AKTIF",
+            updatedAt: new Date().toISOString(),
+          },
+        },
+        { upsert: false }
+      );
+    }
+
+    return { success: true, message: "Data santri dan relasi wali berhasil diperbarui." };
+  } catch (error) {
+    console.error("Error in updateStudentAction:", error);
+    return { success: false, error: "Gagal memperbarui data santri." };
   }
 }

@@ -8,9 +8,9 @@ import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
 
 export function Footer() {
   return (
-    <footer className="mt-auto mx-auto mb-8 max-w-7xl w-[calc(100%-2rem)] transition-all duration-300">
+    <footer className="mt-auto mx-auto mb-6 sm:mb-8 max-w-7xl w-[calc(100%-1.5rem)] sm:w-[calc(100%-2rem)] transition-all duration-300">
       {/* Liquid Glass Panel Container */}
-      <div className="rounded-[28px] liquid-glass p-8 sm:p-10 shadow-2xl relative overflow-hidden">
+      <div className="rounded-[24px] sm:rounded-[28px] liquid-glass p-5 sm:p-10 shadow-2xl relative overflow-hidden">
         {/* Subtle decorative inner corner glow */}
         <div className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-bl from-emerald-500/10 via-transparent to-transparent pointer-events-none rounded-tr-[28px]" />
 
@@ -159,9 +159,9 @@ export function Footer() {
         <div className="border-t border-border/40 my-6" />
 
         {/* Copyright & Kutipan Khas Pesantren */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-muted-foreground">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-muted-foreground text-center sm:text-left">
           <p>© 2026 Darul Khidmah Sidogiri Bekasi. Khidmah Lil-Ma&apos;had Wal-Ummah.</p>
-          <div className="flex items-center gap-5">
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3 sm:gap-5">
             <Link href="#" className="hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
               Kebijakan Privasi
             </Link>

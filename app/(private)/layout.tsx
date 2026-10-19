@@ -8,10 +8,10 @@ export default function PrivateLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen flex flex-col bg-background/50">
+    <div className="min-h-screen flex flex-col bg-background/50 w-full max-w-full overflow-x-clip">
       <PrivateSidebar />
-      <div className="flex-1 flex flex-col lg:pl-64 transition-all duration-300">
-        <main className="flex-1 w-full pt-16 lg:pt-6 pb-8">
+      <div className="flex-1 flex flex-col lg:pl-64 transition-all duration-300 w-full min-w-0 max-w-full overflow-x-clip">
+        <main className="flex-1 w-full min-w-0 max-w-full pt-16 lg:pt-6 pb-8 overflow-x-clip">
           {children}
         </main>
         <Footer />

@@ -84,7 +84,7 @@ export default function PendaftaranSantriBaru() {
       <div className="p-4 sm:p-6 lg:p-8 max-w-4xl w-full mx-auto space-y-8">
         
         {/* Navigation Breadcrumb */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <Link 
             href="/" 
             className="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full liquid-glass-pill text-muted-foreground hover:text-foreground transition-all duration-300"
@@ -516,18 +516,18 @@ export default function PendaftaranSantriBaru() {
               )}
 
               {/* Form Navigation Controls */}
-              <div className="flex items-center justify-between pt-4 border-t border-border/40">
+              <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between pt-4 border-t border-border/40 gap-3">
                 {step > 1 ? (
                   <button 
                     type="button"
                     onClick={handlePrev}
                     disabled={isSubmitting}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full liquid-glass-pill text-xs font-semibold text-foreground hover:bg-white/40 transition-all cursor-pointer disabled:opacity-50"
+                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full liquid-glass-pill text-xs font-semibold text-foreground hover:bg-white/40 transition-all cursor-pointer disabled:opacity-50"
                   >
                     <ArrowLeft size={14} />
                     <span>Kembali</span>
                   </button>
-                ) : <div />}
+                ) : <div className="hidden sm:block" />}
 
                 <button 
                   type="submit"

@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, useSyncExternalStore } from "react";
+import React, { useState, useEffect, useMemo, useSyncExternalStore } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { getCurrentUserAction, logoutAction } from "@/lib/actions/auth";
+import { getUserPermissionsAction, type UserPermissionsResult } from "@/lib/actions/roles";
+import type { ModulePermissionKey } from "@/lib/roles-config";
 import {
   LayoutGrid,
   Users,
@@ -25,6 +27,9 @@ import {
   ChevronRight,
   ExternalLink,
   Lock,
+  BookOpen,
+  Building2,
+  Compass,
 } from "lucide-react";
 
 const emptySubscribe = () => () => {};
@@ -41,6 +46,7 @@ interface NavItem {
   label: string;
   icon: React.ElementType;
   badge?: string;
+  moduleKey: ModulePermissionKey;
 }
 
 interface NavGroup {
@@ -48,59 +54,36 @@ interface NavGroup {
   items: NavItem[];
 }
 
-const NAV_GROUPS: NavGroup[] = [
-  {
-    groupName: "Dashboard",
-    items: [
-      { href: "/modules", label: "Modul Sistem", icon: LayoutGrid },
-    ],
-  },
-  {
-    groupName: "Akademik & Santri",
-    items: [
-      { href: "/students", label: "Buku Induk Santri", icon: Users },
-      { href: "/teachers", label: "Dewan Asatidz", icon: UserCheck },
-      { href: "/parents", label: "Wali Santri", icon: HeartHandshake },
-    ],
-  },
-  {
-    groupName: "Fasilitas & Syiar",
-    items: [
-      { href: "/modules/dormitory", label: "Manajemen Asrama", icon: BedDouble },
-      { href: "/modules/media", label: "Pusat Media", icon: ImageIcon },
-    ],
-  },
-  {
-    groupName: "Keamanan & Sistem",
-    items: [
-      { href: "/modules/users", label: "Manajemen Pengguna", icon: ShieldCheck, badge: "RBAC" },
-      { href: "/data-science", label: "AI & Analitik", icon: Sparkles },
-      { href: "/settings", label: "Pengaturan Sistem", icon: Settings },
-    ],
-  },
-];
-
 export function PrivateSidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [user, setUser] = useState<UserSession | null>(null);
+  const [userPermissions, setUserPermissions] = useState<UserPermissionsResult | null>(null);
   const [loggingOut, setLoggingOut] = useState(false);
   const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
   const { theme, setTheme, resolvedTheme } = useTheme();
   const pathname = usePathname();
   const router = useRouter();
 
-  // Fetch current authenticated user via Server Action (zero network exposure)
+  // Fetch current authenticated user and dynamic RBAC permissions from database
   useEffect(() => {
     let ignore = false;
-    getCurrentUserAction()
-      .then((userSession) => {
-        if (!ignore && userSession) {
-          setUser(userSession);
+    Promise.all([
+      getCurrentUserAction(),
+      getUserPermissionsAction(),
+    ])
+      .then(([userSession, permsRes]) => {
+        if (!ignore) {
+          if (userSession) {
+            setUser(userSession);
+          }
+          if (permsRes.success && permsRes.data) {
+            setUserPermissions(permsRes.data);
+          }
         }
       })
       .catch((err) => {
-        console.error("Gagal membaca profil sesi:", err);
+        console.error("Gagal membaca profil sesi atau hak akses:", err);
       });
 
     return () => {
@@ -136,23 +119,109 @@ export function PrivateSidebar() {
 
   // Helper format role display
   const getRoleLabel = (role?: string) => {
-    switch (role) {
+    switch (role?.toLowerCase()) {
       case "super_admin":
         return "Super Admin";
-      case "admin_yayasan":
-        return "Admin Yayasan";
-      case "admin":
-        return "Administrator";
+      case "ketua_ranting":
+      case "ketua":
+      case "ketua_yayasan":
+        return "Ketua Ranting";
+      case "staf_administrasi":
+      case "staf":
+      case "staff":
+        return "Staf Administrasi";
+      case "dewan_asatidz":
       case "guru":
       case "teacher":
         return "Dewan Asatidz";
+      case "wali_santri":
       case "orang_tua":
       case "parent":
         return "Wali Santri";
       default:
-        return "Staf Tarbiyah";
+        return "Staf Administrasi";
     }
   };
+
+  const filteredNavGroups = useMemo<NavGroup[]>(() => {
+    const role = user?.role?.toLowerCase();
+
+    const getDashboardLabel = () => {
+      if (role === "wali_santri" || role === "orang_tua" || role === "parent") return "Portal Wali Santri";
+      if (role === "dewan_asatidz" || role === "guru" || role === "teacher") return "Portal Dewan Asatidz";
+      if (role === "ketua_ranting" || role === "ketua" || role === "ketua_yayasan") return "Portal Eksekutif";
+      if (role === "staf_administrasi" || role === "staf" || role === "staff") return "Portal Administrasi";
+      return "Modul Sistem";
+    };
+
+    const allGroups: NavGroup[] = [
+      {
+        groupName: role === "wali_santri" ? "Portal Keluarga" : "Portal Utama",
+        items: [
+          { href: "/modules", label: getDashboardLabel(), icon: LayoutGrid, moduleKey: "modules" },
+        ],
+      },
+      {
+        groupName: "Unit Pendidikan",
+        items: [
+          { href: "/modules/mi", label: "Madrasah Ibtidaiyah (MI)", icon: BookOpen, moduleKey: "mi" },
+          { href: "/modules/mts", label: "Madrasah Tsanawiyah (MTs)", icon: Building2, moduleKey: "mts" },
+          { href: "/modules/tpq", label: "TPQ Al-Qur'an Sidogiri", icon: Compass, moduleKey: "tpq" },
+        ],
+      },
+      {
+        groupName: "Akademik & Santri",
+        items: [
+          { href: "/students", label: "Buku Induk Santri", icon: Users, moduleKey: "students" },
+          { href: "/teachers", label: "Dewan Asatidz", icon: UserCheck, moduleKey: "teachers" },
+          { href: "/parents", label: "Wali Santri", icon: HeartHandshake, moduleKey: "parents" },
+        ],
+      },
+      {
+        groupName: "Fasilitas & Syiar",
+        items: [
+          { href: "/modules/dormitory", label: "Manajemen Asrama", icon: BedDouble, moduleKey: "dormitory" },
+          { href: "/modules/media", label: "Pusat Media", icon: ImageIcon, moduleKey: "media" },
+        ],
+      },
+      {
+        groupName: "Keamanan & Sistem",
+        items: [
+          { href: "/modules/users", label: "Manajemen Pengguna", icon: ShieldCheck, badge: "RBAC", moduleKey: "users" },
+          { href: "/data-science", label: "AI & Analitik", icon: Sparkles, moduleKey: "data_science" },
+          { href: "/settings", label: "Pengaturan Sistem", icon: Settings, moduleKey: "settings" },
+        ],
+      },
+    ];
+
+    // Jika konfigurasi RBAC database telah termuat, saring 100% dinamis sesuai permissions matriks
+    if (userPermissions?.permissions) {
+      return allGroups
+        .map((group) => ({
+          ...group,
+          items: group.items.filter((item) => {
+            // Root Security Failsafe: users hanya untuk super_admin
+            if (item.moduleKey === "users" && !userPermissions.isSuperAdmin) {
+              return false;
+            }
+            return Boolean(userPermissions.permissions[item.moduleKey]);
+          }),
+        }))
+        .filter((group) => group.items.length > 0);
+    }
+
+    // Fallback awal sebelum permissions termuat: sembunyikan users untuk non-super_admin
+    const isSuper = role === "super_admin" || role === "admin";
+    return allGroups
+      .map((group) => ({
+        ...group,
+        items: group.items.filter((item) => {
+          if (item.moduleKey === "users" && !isSuper) return false;
+          return true;
+        }),
+      }))
+      .filter((group) => group.items.length > 0);
+  }, [user, userPermissions]);
 
   return (
     <>
@@ -160,17 +229,17 @@ export function PrivateSidebar() {
       {/* MOBILE TOP BAR (<lg)                                      */}
       {/* ========================================================= */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-40 px-4 py-3 liquid-glass-elevated border-b border-white/40 dark:border-white/10 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 min-w-0">
           <button
             type="button"
             onClick={() => setMobileOpen(true)}
-            className="p-2 rounded-2xl liquid-glass border border-white/50 text-foreground hover:bg-white/10 transition-colors"
+            className="p-2 rounded-2xl liquid-glass border border-white/50 text-foreground hover:bg-white/10 transition-colors shrink-0"
             aria-label="Buka Menu Sidebar"
           >
             <Menu size={20} />
           </button>
 
-          <Link href="/modules" className="flex items-center gap-2">
+          <Link href="/modules" className="flex items-center gap-2 min-w-0">
             <div className="w-8 h-8 rounded-xl overflow-hidden bg-white/95 dark:bg-emerald-950/90 p-0.5 shadow-md shadow-emerald-950/20 ring-1 ring-emerald-600/40 dark:ring-emerald-400/40 flex items-center justify-center shrink-0">
               <Image
                 src="/logo-sidogiri.jpeg"
@@ -181,11 +250,11 @@ export function PrivateSidebar() {
                 className="w-full h-full object-cover rounded-lg"
               />
             </div>
-            <div className="flex flex-col">
-              <span className="font-extrabold text-xs tracking-tight text-foreground leading-tight">
+            <div className="flex flex-col min-w-0">
+              <span className="font-extrabold text-xs tracking-tight text-foreground leading-tight truncate">
                 Darul Khidmah Sidogiri
               </span>
-              <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">
+              <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 truncate">
                 Bekasi Portal
               </span>
             </div>
@@ -261,7 +330,7 @@ export function PrivateSidebar() {
 
               {/* Navigation Items */}
               <nav className="space-y-5">
-                {NAV_GROUPS.map((group) => (
+                {filteredNavGroups.map((group) => (
                   <div key={group.groupName} className="space-y-1.5">
                     <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground/70 px-3">
                       {group.groupName}
@@ -409,7 +478,7 @@ export function PrivateSidebar() {
 
           {/* Nav Groups */}
           <nav className="space-y-5 overflow-y-auto max-h-[calc(100vh-280px)] pr-1">
-            {NAV_GROUPS.map((group) => (
+            {filteredNavGroups.map((group) => (
               <div key={group.groupName} className="space-y-1">
                 {!isCollapsed && (
                   <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground/60 px-3 py-1">

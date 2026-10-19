@@ -143,7 +143,7 @@ export default async function InstansiDetailPage({
       <div className="p-4 sm:p-6 lg:p-8 max-w-5xl w-full mx-auto space-y-8">
         
         {/* Navigation Breadcrumb */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <Link 
             href="/instansi" 
             className="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full liquid-glass-pill text-muted-foreground hover:text-foreground transition-all duration-300"
@@ -181,7 +181,7 @@ export default async function InstansiDetailPage({
             </div>
             <div className="p-3 rounded-2xl liquid-glass border border-border/40">
               <span className="text-muted-foreground text-[10px] block">Total Peserta Didik:</span>
-              <strong className="text-emerald-700 dark:text-emerald-400">{data.santri}</strong>
+              <strong className="text-emerald-700 dark:text-emerald-400 break-words">{data.santri}</strong>
             </div>
             <div className="p-3 rounded-2xl liquid-glass border border-border/40">
               <span className="text-muted-foreground text-[10px] block">Status Akreditasi:</span>

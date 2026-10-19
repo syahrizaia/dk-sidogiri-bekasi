@@ -18,18 +18,9 @@ export async function POST(request: NextRequest) {
     const db = await getDatabase();
     const usersCollection = db.collection("users");
 
-    // Auto-seed admin akun utama jika koleksi users kosong
-    const totalUsers = await usersCollection.countDocuments();
-    if (totalUsers === 0) {
-      const defaultAdmin = {
-        name: "Admin Darul Khidmah Sidogiri Bekasi",
-        email: "admin@sidogiri-bekasi.sch.id",
-        passwordHash: hashPassword("Sidogiri2026!"),
-        role: "admin",
-        createdAt: new Date().toISOString(),
-      };
-      await usersCollection.insertOne(defaultAdmin);
-    }
+    // Pastikan seluruh akun peran (Super Admin, Dewan Asatidz, Wali Santri) terdaftar
+    const { ensureDefaultSystemAccounts } = await import("@/lib/actions/users");
+    await ensureDefaultSystemAccounts();
 
     const userDoc = await usersCollection.findOne({ email: normalizedEmail });
     if (!userDoc) {

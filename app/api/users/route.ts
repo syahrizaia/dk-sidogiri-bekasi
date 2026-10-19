@@ -1,10 +1,20 @@
 import { NextResponse } from "next/server";
 import { getDatabase } from "@/lib/mongodb";
-import { hashPassword } from "@/lib/auth";
+import { hashPassword, requireSuperAdminSession } from "@/lib/auth";
+import { normalizeRoleId } from "@/lib/roles-config";
 import { ObjectId } from "mongodb";
 
 export async function GET(request: Request) {
   try {
+    try {
+      await requireSuperAdminSession();
+    } catch {
+      return NextResponse.json(
+        { success: false, error: "Akses ditolak: Hanya Super Admin." },
+        { status: 403 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const role = searchParams.get("role");
 
@@ -26,6 +36,7 @@ export async function GET(request: Request) {
     const formatted = users.map((u) => ({
       ...u,
       _id: u._id.toString(),
+      role: normalizeRoleId(u.role),
       status: u.status || "active",
       createdAt: u.createdAt || new Date().toISOString(),
     }));
@@ -42,6 +53,15 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    try {
+      await requireSuperAdminSession();
+    } catch {
+      return NextResponse.json(
+        { success: false, error: "Akses ditolak: Hanya Super Admin." },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const { name, email, password, role, status, phone } = body;
 
@@ -65,11 +85,12 @@ export async function POST(request: Request) {
       );
     }
 
+    const finalRole = normalizeRoleId(role);
     const newUser = {
       name: String(name).trim(),
       email: normalizedEmail,
       passwordHash: hashPassword(password),
-      role: role || "staf",
+      role: finalRole,
       status: status || "active",
       phone: phone ? String(phone).trim() : "",
       createdAt: new Date().toISOString(),
@@ -104,6 +125,15 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
+    try {
+      await requireSuperAdminSession();
+    } catch {
+      return NextResponse.json(
+        { success: false, error: "Akses ditolak: Hanya Super Admin." },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const { id, status, role, name, phone } = body;
 
@@ -127,7 +157,7 @@ export async function PATCH(request: Request) {
     };
 
     if (status !== undefined) updateFields.status = status;
-    if (role !== undefined) updateFields.role = role;
+    if (role !== undefined) updateFields.role = normalizeRoleId(role);
     if (name !== undefined) updateFields.name = String(name).trim();
     if (phone !== undefined) updateFields.phone = String(phone).trim();
 

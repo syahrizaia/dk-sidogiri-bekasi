@@ -2,9 +2,14 @@
 
 import "server-only";
 import { getDatabase } from "@/lib/mongodb";
+import { getSessionFromCookies } from "@/lib/auth";
+import { verifyUserPermission } from "@/lib/actions/roles";
+import { ObjectId } from "mongodb";
+import { serializeData } from "@/lib/utils";
 
 export interface TeacherRecord {
   id?: string;
+  _id?: string;
   nip: string;
   name: string;
   role: string;
@@ -14,6 +19,7 @@ export interface TeacherRecord {
   status: "AKTIF" | "CUTI";
   joinedYear: number;
   createdAt?: string;
+  updatedAt?: string;
 }
 
 const DEFAULT_TEACHERS = [
@@ -98,7 +104,7 @@ export async function getTeachersAction(): Promise<{ success: boolean; data?: Te
       createdAt: t.createdAt,
     }));
 
-    return { success: true, data: formatted };
+    return { success: true, data: serializeData(formatted) };
   } catch (error) {
     console.error("Error in getTeachersAction:", error);
     return { success: false, error: "Gagal memuat dewan asatidz." };
@@ -116,6 +122,11 @@ export async function createTeacherAction(payload: {
   joinedYear: number;
 }) {
   try {
+    const authCheck = await verifyUserPermission("teachers", "create");
+    if (!authCheck.allowed) {
+      return { success: false, error: authCheck.error || "Akses ditolak: Anda tidak memiliki wewenang untuk menambahkan data asatidz baru." };
+    }
+
     const { nip, name, role, institution, specialization, phone } = payload;
     if (!nip || !name || !role || !institution) {
       return { success: false, error: "NIP, Nama, Tugas, dan Lembaga wajib diisi." };
@@ -140,10 +151,100 @@ export async function createTeacherAction(payload: {
     return {
       success: true,
       message: "Data asatidz berhasil ditambahkan.",
-      data: { ...newRecord, id: result.insertedId.toString() },
+      data: serializeData({
+        id: result.insertedId.toString(),
+        nip: newRecord.nip,
+        name: newRecord.name,
+        role: newRecord.role,
+        institution: newRecord.institution,
+        specialization: newRecord.specialization,
+        phone: newRecord.phone,
+        status: newRecord.status,
+        joinedYear: newRecord.joinedYear,
+        createdAt: newRecord.createdAt,
+      }),
     };
   } catch (error) {
     console.error("Error in createTeacherAction:", error);
     return { success: false, error: "Gagal menambahkan guru." };
+  }
+}
+
+export async function updateTeacherAction(id: string, payload: Partial<TeacherRecord>) {
+  try {
+    const authCheck = await verifyUserPermission("teachers", "update");
+    if (!authCheck.allowed) {
+      return { success: false, error: authCheck.error || "Akses ditolak: Anda tidak memiliki wewenang untuk memperbarui data asatidz." };
+    }
+
+    if (!id) {
+      return { success: false, error: "ID asatidz tidak valid." };
+    }
+
+    const db = await getDatabase();
+    const collection = db.collection("teachers");
+
+    let query: Record<string, unknown> = { id };
+    if (ObjectId.isValid(id)) {
+      query = { $or: [{ _id: new ObjectId(id) }, { id }, { nip: id }] };
+    } else {
+      query = { $or: [{ id }, { nip: id }] };
+    }
+
+    const updateFields: Record<string, unknown> = {
+      updatedAt: new Date().toISOString(),
+    };
+
+    if (payload.name) updateFields.name = String(payload.name).trim();
+    if (payload.nip) updateFields.nip = String(payload.nip).trim().toUpperCase();
+    if (payload.role) updateFields.role = String(payload.role).trim();
+    if (payload.institution) updateFields.institution = payload.institution;
+    if (payload.specialization !== undefined) updateFields.specialization = String(payload.specialization).trim();
+    if (payload.phone !== undefined) updateFields.phone = String(payload.phone).trim();
+    if (payload.status) updateFields.status = payload.status;
+    if (payload.joinedYear) updateFields.joinedYear = Number(payload.joinedYear);
+
+    const result = await collection.updateOne(query, { $set: updateFields });
+    if (result.matchedCount === 0) {
+      return { success: false, error: "Data asatidz tidak ditemukan." };
+    }
+
+    return { success: true, message: "Data asatidz berhasil diperbarui." };
+  } catch (error) {
+    console.error("Error in updateTeacherAction:", error);
+    return { success: false, error: "Gagal memperbarui data asatidz." };
+  }
+}
+
+export async function deleteTeacherAction(id: string) {
+  try {
+    const authCheck = await verifyUserPermission("teachers", "delete");
+    if (!authCheck.allowed) {
+      return { success: false, error: authCheck.error || "Akses ditolak: Anda tidak memiliki wewenang untuk menghapus data asatidz." };
+    }
+
+    if (!id) {
+      return { success: false, error: "ID asatidz tidak valid." };
+    }
+
+    const db = await getDatabase();
+    const collection = db.collection("teachers");
+
+    let query: Record<string, unknown> = { id };
+    if (ObjectId.isValid(id)) {
+      query = { $or: [{ _id: new ObjectId(id) }, { id }, { nip: id }] };
+    } else {
+      query = { $or: [{ id }, { nip: id }] };
+    }
+
+    const result = await collection.deleteOne(query);
+    if (result.deletedCount === 0) {
+      return { success: false, error: "Data asatidz tidak ditemukan." };
+    }
+
+    return { success: true, message: "Data asatidz berhasil dihapus." };
+  } catch (error) {
+    console.error("Error in deleteTeacherAction:", error);
+    return { success: false, error: "Gagal menghapus data asatidz." };
   }
 }

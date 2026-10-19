@@ -62,18 +62,18 @@ export function PublicNavbar() {
   };
 
   return (
-    <header className="sticky top-4 mx-auto max-w-7xl w-[calc(100%-2rem)] z-50 transition-all duration-400">
+    <header className="sticky top-3 sm:top-4 mx-auto max-w-7xl w-[calc(100%-1.5rem)] sm:w-[calc(100%-2rem)] z-50 transition-all duration-400">
       {/* Floating Apple Liquid Capsule Container */}
       <nav 
         aria-label="Navigasi Publik" 
-        className="liquid-glass-elevated rounded-full px-4 sm:px-6 py-2.5 flex items-center justify-between shadow-2xl"
+        className="liquid-glass-elevated rounded-full px-3.5 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between shadow-2xl"
       >
         {/* Logo & Identitas: Darul Khidmah Sidogiri lalu Bekasi */}
         <Link 
           href="/" 
-          className="flex items-center gap-3 group focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-full pr-2"
+          className="flex items-center gap-2.5 sm:gap-3 group focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-full pr-1 min-w-0"
         >
-          <div className="relative w-10 h-10 rounded-full overflow-hidden bg-white/95 dark:bg-emerald-950/90 p-0.5 shadow-md shadow-emerald-950/25 ring-2 ring-emerald-600/40 dark:ring-emerald-400/40 group-hover:scale-105 transition-transform duration-300 flex items-center justify-center shrink-0">
+          <div className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-white/95 dark:bg-emerald-950/90 p-0.5 shadow-md shadow-emerald-950/25 ring-2 ring-emerald-600/40 dark:ring-emerald-400/40 group-hover:scale-105 transition-transform duration-300 flex items-center justify-center shrink-0">
             <Image
               src="/logo-sidogiri.jpeg"
               alt="Logo Resmi Darul Khidmah Sidogiri Bekasi"
@@ -83,16 +83,16 @@ export function PublicNavbar() {
               className="w-full h-full object-cover rounded-full"
             />
           </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="font-bold text-sm tracking-tight text-foreground group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="font-bold text-xs sm:text-sm tracking-tight text-foreground group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors truncate">
                 Darul Khidmah Sidogiri
               </span>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/20">
+              <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/20 shrink-0">
                 Bekasi
               </span>
             </div>
-            <p className="text-[10px] text-muted-foreground tracking-wider uppercase font-medium">
+            <p className="hidden xs:block text-[10px] text-muted-foreground tracking-wider uppercase font-medium truncate">
               Madrasah Miftahul Ulum & TPQ
             </p>
           </div>

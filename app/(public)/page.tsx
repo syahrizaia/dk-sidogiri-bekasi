@@ -327,12 +327,12 @@ export default function DashboardLanding() {
                 const percentage = Math.round((item.jumlah / stats.totalSantri) * 100);
                 return (
                   <div key={idx} className="space-y-2">
-                    <div className="flex items-center justify-between text-xs sm:text-sm font-semibold">
-                      <span className="text-foreground flex items-center gap-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs sm:text-sm font-semibold gap-1">
+                      <span className="text-foreground flex items-center gap-1.5 flex-wrap min-w-0">
                         <span>{item.nama}</span>
                         <span className="text-[11px] font-normal text-muted-foreground">({item.kelas})</span>
                       </span>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
                         <span className="text-foreground font-bold">{item.jumlah} Santri</span>
                         <span className="text-[10px] text-muted-foreground px-1.5 py-0.5 rounded-md bg-black/5 dark:bg-white/5">
                           {percentage}%

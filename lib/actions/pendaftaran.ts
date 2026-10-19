@@ -2,6 +2,7 @@
 
 import "server-only";
 import { getDatabase } from "@/lib/mongodb";
+import { serializeData } from "@/lib/utils";
 
 export interface PendaftaranPayload {
   namaLengkap: string;
@@ -51,13 +52,13 @@ export async function submitPendaftaranAction(payload: PendaftaranPayload) {
     return {
       success: true,
       message: "Pendaftaran santri baru berhasil dikirim.",
-      data: {
+      data: serializeData({
         id: result.insertedId.toString(),
         regId,
         namaLengkap: payload.namaLengkap,
         jenjang: payload.jenjang,
         statusPendaftaran: "TERDAFTAR_ONLINE",
-      },
+      }),
     };
   } catch (error) {
     console.error("Error in submitPendaftaranAction:", error);

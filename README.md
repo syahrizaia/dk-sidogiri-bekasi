@@ -64,9 +64,8 @@ Dibangun dengan arsitektur **Next.js 16 App Router**, **React 19**, dan basis da
 ```
 dk-sidogiri/
 ├── app/
-│   ├── (auth)/                  # Portal Autentikasi (Login & Register)
+│   ├── (auth)/                  # Portal Autentikasi (Login; Akun dibuat oleh Super Admin)
 │   │   ├── auth/login/page.tsx
-│   │   ├── auth/register/page.tsx
 │   │   └── layout.tsx           # Layout Berorientasi Kaca dengan Logo Resmi
 │   ├── (private)/               # Dasbor & Modul Internal (Memerlukan Sesi & RBAC)
 │   │   ├── modules/             # Beranda Modul Sistem & Utilitas

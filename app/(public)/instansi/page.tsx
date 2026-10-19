@@ -63,7 +63,7 @@ export default function InstansiOverview() {
       <div className="p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-8">
         
         {/* Navigation Breadcrumb */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <Link 
             href="/" 
             className="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full liquid-glass-pill text-muted-foreground hover:text-foreground transition-all duration-300"

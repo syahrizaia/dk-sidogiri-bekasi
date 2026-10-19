@@ -55,9 +55,27 @@ function LoginForm() {
     }
   };
 
-  const handleFillDemo = () => {
-    setEmail("admin@sidogiri-bekasi.sch.id");
-    setPassword("Sidogiri2026!");
+  const [selectedDemoRole, setSelectedDemoRole] = useState<string | null>(null);
+
+  const handleFillDemo = (role: "admin" | "ketua" | "guru" | "wali" | "staf") => {
+    setSelectedDemoRole(role);
+    setErrorMessage("");
+    if (role === "admin") {
+      setEmail("admin@sidogiri-bekasi.sch.id");
+      setPassword("Sidogiri2026!");
+    } else if (role === "ketua") {
+      setEmail("ketua@sidogiri-bekasi.sch.id");
+      setPassword("KetuaSidogiri2026!");
+    } else if (role === "guru") {
+      setEmail("guru@sidogiri-bekasi.sch.id");
+      setPassword("GuruSidogiri2026!");
+    } else if (role === "wali") {
+      setEmail("wali@sidogiri-bekasi.sch.id");
+      setPassword("WaliSidogiri2026!");
+    } else if (role === "staf") {
+      setEmail("staf@sidogiri-bekasi.sch.id");
+      setPassword("StafSidogiri2026!");
+    }
   };
 
   return (
@@ -152,23 +170,12 @@ function LoginForm() {
             </div>
 
             <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label 
-                  htmlFor="password" 
-                  className="block text-xs font-semibold text-foreground/90"
-                >
-                  Kata Sandi Akun
-                </label>
-                <button
-                  type="button"
-                  onClick={handleFillDemo}
-                  className="text-[10px] text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer flex items-center gap-1 font-semibold"
-                  title="Gunakan akun admin demo"
-                >
-                  <Sparkles size={11} />
-                  <span>Isi Akun Admin</span>
-                </button>
-              </div>
+              <label 
+                htmlFor="password" 
+                className="block text-xs font-semibold text-foreground/90"
+              >
+                Kata Sandi Akun
+              </label>
 
               <div className="relative">
                 <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -193,6 +200,96 @@ function LoginForm() {
               </div>
             </div>
 
+            {/* Quick Demo Role Selector */}
+            <div className="p-3 rounded-2xl bg-white/40 dark:bg-black/20 border border-white/40 dark:border-white/10 space-y-2">
+              <div className="flex items-center justify-between text-[11px] text-muted-foreground font-medium">
+                <span className="flex items-center gap-1">
+                  <Sparkles size={12} className="text-emerald-600 dark:text-emerald-400" />
+                  <span>Isi Cepat Akun Demo:</span>
+                </span>
+                {selectedDemoRole && (
+                  <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold uppercase tracking-wider">
+                    {selectedDemoRole === "admin"
+                      ? "Super Admin"
+                      : selectedDemoRole === "ketua"
+                      ? "Ketua Ranting"
+                      : selectedDemoRole === "guru"
+                      ? "Dewan Asatidz"
+                      : selectedDemoRole === "wali"
+                      ? "Wali Santri"
+                      : "Staf Administrasi"}
+                  </span>
+                )}
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => handleFillDemo("admin")}
+                  className={`px-2 py-1.5 rounded-xl text-[11px] font-semibold transition-all flex flex-col items-center gap-0.5 border cursor-pointer ${
+                    selectedDemoRole === "admin"
+                      ? "bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-500/40 shadow-sm"
+                      : "bg-white/60 dark:bg-black/40 text-muted-foreground hover:text-foreground border-white/40 dark:border-white/10 hover:border-emerald-500/30"
+                  }`}
+                  title="Super Admin (admin@sidogiri-bekasi.sch.id)"
+                >
+                  <span className="text-xs">🛡️ Admin</span>
+                  <span className="text-[9px] opacity-75">Utama</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleFillDemo("ketua")}
+                  className={`px-2 py-1.5 rounded-xl text-[11px] font-semibold transition-all flex flex-col items-center gap-0.5 border cursor-pointer ${
+                    selectedDemoRole === "ketua"
+                      ? "bg-purple-500/20 text-purple-800 dark:text-purple-300 border-purple-500/40 shadow-sm"
+                      : "bg-white/60 dark:bg-black/40 text-muted-foreground hover:text-foreground border-white/40 dark:border-white/10 hover:border-emerald-500/30"
+                  }`}
+                  title="Ketua Ranting (ketua@sidogiri-bekasi.sch.id)"
+                >
+                  <span className="text-xs">👑 Ketua</span>
+                  <span className="text-[9px] opacity-75">Ranting</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleFillDemo("guru")}
+                  className={`px-2 py-1.5 rounded-xl text-[11px] font-semibold transition-all flex flex-col items-center gap-0.5 border cursor-pointer ${
+                    selectedDemoRole === "guru"
+                      ? "bg-teal-500/20 text-teal-800 dark:text-teal-300 border-teal-500/40 shadow-sm"
+                      : "bg-white/60 dark:bg-black/40 text-muted-foreground hover:text-foreground border-white/40 dark:border-white/10 hover:border-emerald-500/30"
+                  }`}
+                  title="Dewan Asatidz / Guru (guru@sidogiri-bekasi.sch.id)"
+                >
+                  <span className="text-xs">🎓 Guru</span>
+                  <span className="text-[9px] opacity-75">Asatidz</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleFillDemo("wali")}
+                  className={`px-2 py-1.5 rounded-xl text-[11px] font-semibold transition-all flex flex-col items-center gap-0.5 border cursor-pointer ${
+                    selectedDemoRole === "wali"
+                      ? "bg-indigo-500/20 text-indigo-800 dark:text-indigo-300 border-indigo-500/40 shadow-sm"
+                      : "bg-white/60 dark:bg-black/40 text-muted-foreground hover:text-foreground border-white/40 dark:border-white/10 hover:border-emerald-500/30"
+                  }`}
+                  title="Wali Santri (wali@sidogiri-bekasi.sch.id)"
+                >
+                  <span className="text-xs">👨‍👩‍👧 Wali</span>
+                  <span className="text-[9px] opacity-75">Santri</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleFillDemo("staf")}
+                  className={`col-span-2 sm:col-span-1 px-2 py-1.5 rounded-xl text-[11px] font-semibold transition-all flex flex-col items-center gap-0.5 border cursor-pointer ${
+                    selectedDemoRole === "staf"
+                      ? "bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-500/40 shadow-sm"
+                      : "bg-white/60 dark:bg-black/40 text-muted-foreground hover:text-foreground border-white/40 dark:border-white/10 hover:border-emerald-500/30"
+                  }`}
+                  title="Staf Administrasi (staf@sidogiri-bekasi.sch.id)"
+                >
+                  <span className="text-xs">📋 Staf</span>
+                  <span className="text-[9px] opacity-75">Admin</span>
+                </button>
+              </div>
+            </div>
+
             <button 
               type="submit"
               disabled={isLoading || isSuccess}
@@ -203,16 +300,14 @@ function LoginForm() {
             </button>
           </form>
 
-          {/* Bottom Link to Register */}
-          <div className="pt-3 border-t border-border/40 text-center space-y-2 text-xs">
-            <p className="text-muted-foreground">
-              Belum memiliki akun pengelola atau wali?{" "}
-              <Link 
-                href="/auth/register" 
-                className="font-bold text-emerald-700 dark:text-emerald-400 hover:underline"
-              >
-                Daftar Akun Baru
-              </Link>
+          {/* Bottom Info: Akun Dikelola Super Admin */}
+          <div className="pt-3.5 border-t border-border/40 text-center space-y-1.5 text-xs">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted/40 text-[11px] font-medium text-muted-foreground">
+              <ShieldCheck size={13} className="text-emerald-600 dark:text-emerald-400" />
+              <span>Akun dibuat &amp; dikelola langsung oleh Super Admin</span>
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              Pendaftaran akun mandiri ditutup. Hubungi administrator madrasah jika Anda belum memiliki akun atau lupa kata sandi.
             </p>
           </div>
 

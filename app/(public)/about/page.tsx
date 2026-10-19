@@ -22,10 +22,10 @@ import {
 
 export default function AboutPage() {
   return (
-    <div className="relative min-h-screen py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <div className="relative min-h-screen py-8 sm:py-12 px-3.5 sm:px-6 lg:px-8 w-full max-w-7xl min-w-0 mx-auto overflow-x-clip">
       {/* Background Decorative Ambient Orbs */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden -z-10 flex items-center justify-center opacity-30 dark:opacity-20">
-        <div className="w-[850px] h-[850px] rounded-full bg-gradient-to-tr from-emerald-500/15 via-teal-500/10 to-amber-500/10 blur-3xl animate-pulse" />
+        <div className="w-[850px] max-w-[100vw] h-[850px] rounded-full bg-gradient-to-tr from-emerald-500/15 via-teal-500/10 to-amber-500/10 blur-3xl animate-pulse" />
       </div>
 
       {/* Hero Section: Mengenal Darul Khidmah Sidogiri Bekasi */}
@@ -384,7 +384,7 @@ export default function AboutPage() {
             <div className="space-y-2.5 text-xs text-foreground/90 pt-2">
               <div className="flex items-center gap-3">
                 <MapPin className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
-                <span>Jl. Khidmah Sidogiri No. 19, Bekasi, Jawa Barat 17111</span>
+                <span className="break-words">Jl. Khidmah Sidogiri No. 19, Bekasi, Jawa Barat 17111</span>
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-teal-600 dark:text-teal-400 flex-shrink-0" />
@@ -392,7 +392,7 @@ export default function AboutPage() {
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-                <span>info@sidogiri-bekasi.sch.id</span>
+                <span className="break-all">info@sidogiri-bekasi.sch.id</span>
               </div>
             </div>
           </div>

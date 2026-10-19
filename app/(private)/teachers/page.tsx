@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { getTeachersAction, createTeacherAction } from "@/lib/actions/teachers";
+import { getTeachersAction, createTeacherAction, updateTeacherAction } from "@/lib/actions/teachers";
+import { getUserPermissionsAction, type UserPermissionsResult } from "@/lib/actions/roles";
 import {
   UserCheck,
   Search,
@@ -18,7 +19,8 @@ import {
   Filter,
   Users,
   ShieldCheck,
-  GraduationCap
+  GraduationCap,
+  Pencil
 } from "lucide-react";
 
 interface Teacher {
@@ -36,11 +38,15 @@ interface Teacher {
 export default function TeachersPage() {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userPermissions, setUserPermissions] = useState<UserPermissionsResult | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedInst, setSelectedInst] = useState<"ALL" | "MI" | "MTs" | "TPQ">("ALL");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [notification, setNotification] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
+  const canCreate = userPermissions?.crudPermissions?.teachers?.create ?? false;
+  const canEdit = userPermissions?.crudPermissions?.teachers?.update ?? false;
 
   // Form State
   const [formData, setFormData] = useState({
@@ -52,6 +58,56 @@ export default function TeachersPage() {
     phone: "",
     joinedYear: new Date().getFullYear(),
   });
+
+  // Edit State
+  const [editingTeacher, setEditingTeacher] = useState<Teacher | null>(null);
+  const [editFormData, setEditFormData] = useState({
+    name: "",
+    nip: "",
+    role: "",
+    institution: "MI" as "MI" | "MTs" | "TPQ",
+    specialization: "",
+    phone: "",
+    status: "AKTIF" as "AKTIF" | "CUTI",
+    joinedYear: new Date().getFullYear(),
+  });
+  const [editSubmitting, setEditSubmitting] = useState(false);
+
+  const openEditModal = (t: Teacher) => {
+    setEditingTeacher(t);
+    setEditFormData({
+      name: t.name || "",
+      nip: t.nip || "",
+      role: t.role || "",
+      institution: t.institution || "MI",
+      specialization: t.specialization || "",
+      phone: t.phone || "",
+      status: t.status || "AKTIF",
+      joinedYear: t.joinedYear || new Date().getFullYear(),
+    });
+  };
+
+  const handleUpdateTeacher = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingTeacher) return;
+    setEditSubmitting(true);
+    setNotification(null);
+
+    try {
+      const res = await updateTeacherAction(editingTeacher.id || editingTeacher.nip, editFormData);
+      if (res.success) {
+        setNotification({ type: "success", message: "Data asatidz berhasil diperbarui di MongoDB Atlas!" });
+        setEditingTeacher(null);
+        await loadTeachers();
+      } else {
+        setNotification({ type: "error", message: res.error || "Gagal memperbarui data asatidz." });
+      }
+    } catch {
+      setNotification({ type: "error", message: "Terjadi kesalahan saat memperbarui data." });
+    } finally {
+      setEditSubmitting(false);
+    }
+  };
 
   const loadTeachers = async () => {
     try {
@@ -66,14 +122,22 @@ export default function TeachersPage() {
 
   useEffect(() => {
     let ignore = false;
-    getTeachersAction()
-      .then((res) => {
-        if (!ignore && res.success && res.data) {
-          setTeachers(res.data as unknown as Teacher[]);
+    Promise.all([
+      getTeachersAction(),
+      getUserPermissionsAction(),
+    ])
+      .then(([res, permsRes]) => {
+        if (!ignore) {
+          if (res.success && res.data) {
+            setTeachers(res.data as unknown as Teacher[]);
+          }
+          if (permsRes.success && permsRes.data) {
+            setUserPermissions(permsRes.data);
+          }
         }
       })
       .catch((err) => {
-        console.error("Gagal mengambil data teachers:", err);
+        console.error("Gagal mengambil data teachers atau hak akses:", err);
       })
       .finally(() => {
         if (!ignore) {
@@ -149,9 +213,9 @@ export default function TeachersPage() {
   }, [teachers]);
 
   return (
-    <div className="relative min-h-screen py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <div className="relative min-h-screen py-8 sm:py-10 px-3.5 sm:px-6 lg:px-8 w-full max-w-7xl min-w-0 mx-auto">
       {/* Breadcrumb & Navigation Back */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <Link
           href="/modules"
           className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full liquid-glass-pill text-xs font-semibold text-foreground/80 hover:text-foreground transition-all"
@@ -167,7 +231,7 @@ export default function TeachersPage() {
       </div>
 
       {/* Header Banner */}
-      <div className="rounded-3xl liquid-glass-elevated p-6 sm:p-8 mb-8 border border-white/60 dark:border-white/10 shadow-2xl relative overflow-hidden">
+      <div className="rounded-3xl liquid-glass-elevated p-5 sm:p-8 mb-8 border border-white/60 dark:border-white/10 shadow-2xl relative overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full liquid-glass-pill text-xs font-semibold text-emerald-700 dark:text-emerald-300 mb-2">
@@ -177,23 +241,25 @@ export default function TeachersPage() {
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
               Tenaga Pendidik & Asatidz
             </h1>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1 max-w-2xl">
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1 max-w-2xl leading-relaxed">
               Manajemen dan direktori resmi dewan guru, asatidz pengampu kajian kitab kuning, tahsin Al-Qur&apos;an, dan pembina santri MI, MTs persiapan, dan TPQ Sidogiri.
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-emerald-700 to-teal-600 hover:from-emerald-600 hover:to-teal-500 text-white text-xs font-bold shadow-lg shadow-emerald-900/20 transition-all hover:scale-[1.02] active:scale-95 cursor-pointer self-start md:self-center"
-          >
-            <Plus size={15} />
-            <span>Tambah Asatidz Baru</span>
-          </button>
+          {canCreate && (
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(true)}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-emerald-700 to-teal-600 hover:from-emerald-600 hover:to-teal-500 text-white text-xs font-bold shadow-lg shadow-emerald-900/20 transition-all hover:scale-[1.02] active:scale-95 cursor-pointer self-start md:self-center"
+            >
+              <Plus size={15} />
+              <span>Tambah Asatidz Baru</span>
+            </button>
+          )}
         </div>
 
         {/* KPI Counter Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 mt-6 pt-6 border-t border-border/40">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-3.5 mt-6 pt-6 border-t border-border/40">
           <div className="p-3.5 rounded-2xl liquid-glass-card">
             <span className="text-[11px] font-semibold text-muted-foreground block">Total Asatidz</span>
             <span className="text-2xl font-bold text-foreground font-mono">{stats.total}</span>
@@ -222,11 +288,11 @@ export default function TeachersPage() {
               : "bg-rose-500/15 text-rose-800 dark:text-rose-200 border-rose-500/30"
           }`}
         >
-          <div className="flex items-center gap-2">
-            <CheckCircle2 size={16} />
-            <span>{notification.message}</span>
+          <div className="flex items-center gap-2 min-w-0">
+            <CheckCircle2 size={16} className="shrink-0" />
+            <span className="truncate">{notification.message}</span>
           </div>
-          <button type="button" onClick={() => setNotification(null)} className="opacity-60 hover:opacity-100">
+          <button type="button" onClick={() => setNotification(null)} className="opacity-60 hover:opacity-100 shrink-0 ml-2">
             <X size={14} />
           </button>
         </div>
@@ -245,8 +311,8 @@ export default function TeachersPage() {
           />
         </div>
 
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-          <Filter size={14} className="text-muted-foreground ml-1 mr-1 hidden sm:inline" />
+        <div className="w-full sm:w-auto flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 min-w-0">
+          <Filter size={14} className="text-muted-foreground ml-1 mr-1 hidden sm:inline shrink-0" />
           {[
             { id: "ALL", label: "Semua" },
             { id: "MI", label: "MI (Aktif)" },
@@ -257,7 +323,7 @@ export default function TeachersPage() {
               key={tab.id}
               type="button"
               onClick={() => setSelectedInst(tab.id as typeof selectedInst)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                 selectedInst === tab.id
                   ? "bg-emerald-700 text-white shadow-sm"
                   : "liquid-glass-pill hover:bg-white/40 dark:hover:bg-white/10 text-foreground/80"
@@ -270,7 +336,7 @@ export default function TeachersPage() {
       </div>
 
       {/* Table Section */}
-      <div className="rounded-3xl liquid-glass-card border border-white/60 dark:border-white/10 shadow-xl overflow-hidden">
+      <div className="rounded-3xl liquid-glass-card border border-white/60 dark:border-white/10 shadow-xl overflow-hidden w-full max-w-full min-w-0">
         {loading ? (
           <div className="p-12 text-center text-xs text-muted-foreground">
             <div className="w-8 h-8 rounded-full border-2 border-emerald-600 border-t-transparent animate-spin mx-auto mb-3" />
@@ -283,8 +349,8 @@ export default function TeachersPage() {
             <p className="mt-1">Coba sesuaikan kata kunci pencarian atau filter lembaga.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+          <div className="w-full max-w-full overflow-x-auto">
+            <table className="w-full min-w-[680px] text-left text-xs">
               <thead className="border-b border-border/40 bg-muted/30 text-muted-foreground uppercase text-[10px] tracking-wider font-bold">
                 <tr>
                   <th className="py-3.5 px-4 sm:px-6">Asatidz & NIP</th>
@@ -294,6 +360,7 @@ export default function TeachersPage() {
                   <th className="py-3.5 px-4">Kontak</th>
                   <th className="py-3.5 px-4">Tahun Masuk</th>
                   <th className="py-3.5 px-4 text-center">Status</th>
+                  <th className="py-3.5 px-4 text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/30 font-medium">
@@ -354,121 +421,290 @@ export default function TeachersPage() {
                         {t.status}
                       </span>
                     </td>
+                    <td className="py-4 px-4 text-right">
+                      {canEdit ? (
+                        <button
+                          type="button"
+                          onClick={() => openEditModal(t)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl liquid-glass-pill hover:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-semibold text-[11px] transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                          title="Edit Data Asatidz"
+                        >
+                          <Pencil size={12} />
+                          <span>Edit</span>
+                        </button>
+                      ) : (
+                        <span className="text-[11px] text-muted-foreground/60 italic">Lihat Saja</span>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         )}
+        <div className="px-4 py-2.5 bg-muted/20 border-t border-border/30 text-[10px] text-muted-foreground flex items-center justify-between sm:hidden">
+          <span>← Geser tabel ke samping untuk info lengkap →</span>
+          <span className="font-mono font-semibold">{filteredTeachers.length} Asatidz</span>
+        </div>
       </div>
 
       {/* Modal Tambah Asatidz */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-lg rounded-3xl liquid-glass-elevated border border-white/60 dark:border-white/10 p-6 sm:p-8 shadow-2xl space-y-5 animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between border-b border-border/40 pb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-lg max-h-[calc(100dvh-2rem)] flex flex-col rounded-2xl sm:rounded-[28px] liquid-glass-elevated border border-white/60 dark:border-white/10 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            {/* Pinned Header */}
+            <div className="shrink-0 p-4 sm:p-5 border-b border-border/40 flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-bold text-foreground">Tambah Dewan Asatidz</h3>
+                <h3 className="text-base sm:text-lg font-bold text-foreground">Tambah Dewan Asatidz</h3>
                 <p className="text-xs text-muted-foreground">Data akan tersimpan langsung ke MongoDB Atlas.</p>
               </div>
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="p-1.5 rounded-full liquid-glass-pill hover:bg-white/40 dark:hover:bg-white/10 text-muted-foreground hover:text-foreground"
+                className="p-1.5 rounded-full liquid-glass-pill hover:bg-white/40 dark:hover:bg-white/10 text-muted-foreground hover:text-foreground cursor-pointer"
+                title="Tutup"
               >
                 <X size={16} />
               </button>
             </div>
 
-            <form onSubmit={handleCreateTeacher} className="space-y-4 text-xs">
-              <div>
-                <label className="block font-semibold text-foreground mb-1">Nama Lengkap & Gelar *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Contoh: Ust. M. Hasan Basri, S.Pd.I"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full p-2.5 rounded-xl liquid-glass-input text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <form onSubmit={handleCreateTeacher} className="flex flex-col flex-1 min-h-0 text-xs">
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
                 <div>
-                  <label className="block font-semibold text-foreground mb-1">Lembaga Naungan *</label>
-                  <select
-                    value={formData.institution}
-                    onChange={(e) => setFormData({ ...formData, institution: e.target.value as "MI" | "MTs" | "TPQ" })}
-                    className="w-full p-2.5 rounded-xl liquid-glass-input text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 cursor-pointer"
-                  >
-                    <option value="MI">MI Miftahul Ulum (Aktif)</option>
-                    <option value="MTs">MTs Miftahul Ulum (Persiapan)</option>
-                    <option value="TPQ">TPQ Al-Qur&apos;an Sidogiri</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-foreground mb-1">Jabatan / Peran *</label>
+                  <label className="block font-semibold text-foreground mb-1">Nama Lengkap &amp; Gelar *</label>
                   <input
                     type="text"
                     required
-                    placeholder="Contoh: Guru Kitab / Wali Kelas"
-                    value={formData.role}
-                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                    placeholder="Contoh: Ust. M. Hasan Basri, S.Pd.I"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="w-full p-2.5 rounded-xl liquid-glass-input text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
                   />
                 </div>
-              </div>
 
-              <div>
-                <label className="block font-semibold text-foreground mb-1">Bidang Keahlian / Spesialisasi Kitab *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Contoh: Fathul Qorib, Jurumiyah, Metode Tartil"
-                  value={formData.specialization}
-                  onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
-                  className="w-full p-2.5 rounded-xl liquid-glass-input text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
-                />
-              </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-semibold text-foreground mb-1">Lembaga Naungan *</label>
+                    <select
+                      value={formData.institution}
+                      onChange={(e) => setFormData({ ...formData, institution: e.target.value as "MI" | "MTs" | "TPQ" })}
+                      className="w-full p-2.5 rounded-xl liquid-glass-input text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 cursor-pointer"
+                    >
+                      <option value="MI">MI Miftahul Ulum (Aktif)</option>
+                      <option value="MTs">MTs Miftahul Ulum (Persiapan)</option>
+                      <option value="TPQ">TPQ Al-Qur&apos;an Sidogiri</option>
+                    </select>
+                  </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-foreground mb-1">No. WhatsApp / Telepon</label>
-                  <input
-                    type="tel"
-                    placeholder="Contoh: 0812-3456-7890"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full p-2.5 rounded-xl liquid-glass-input text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 font-mono"
-                  />
+                  <div>
+                    <label className="block font-semibold text-foreground mb-1">Jabatan / Peran *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Contoh: Guru Kitab / Wali Kelas"
+                      value={formData.role}
+                      onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                      className="w-full p-2.5 rounded-xl liquid-glass-input text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
+                    />
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-foreground mb-1">Tahun Bergabung</label>
+                  <label className="block font-semibold text-foreground mb-1">Bidang Keahlian / Spesialisasi Kitab *</label>
                   <input
-                    type="number"
-                    value={formData.joinedYear}
-                    onChange={(e) => setFormData({ ...formData, joinedYear: Number(e.target.value) })}
-                    className="w-full p-2.5 rounded-xl liquid-glass-input text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 font-mono"
+                    type="text"
+                    required
+                    placeholder="Contoh: Fathul Qorib, Jurumiyah, Metode Tartil"
+                    value={formData.specialization}
+                    onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
+                    className="w-full p-2.5 rounded-xl liquid-glass-input text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
                   />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-semibold text-foreground mb-1">No. WhatsApp / Telepon</label>
+                    <input
+                      type="tel"
+                      placeholder="Contoh: 0812-3456-7890"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      className="w-full p-2.5 rounded-xl liquid-glass-input text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 font-mono"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-foreground mb-1">Tahun Bergabung</label>
+                    <input
+                      type="number"
+                      value={formData.joinedYear}
+                      onChange={(e) => setFormData({ ...formData, joinedYear: Number(e.target.value) })}
+                      className="w-full p-2.5 rounded-xl liquid-glass-input text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 font-mono"
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-border/40">
+              {/* Pinned Footer */}
+              <div className="shrink-0 p-3.5 sm:p-4 border-t border-border/40 flex items-center justify-end gap-3 bg-background/50 backdrop-blur-md">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-xl liquid-glass-pill hover:bg-white/40 dark:hover:bg-white/10 text-foreground font-semibold"
+                  className="px-4 py-2 rounded-xl liquid-glass-pill hover:bg-white/40 dark:hover:bg-white/10 text-foreground font-semibold cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-700 to-teal-600 hover:from-emerald-600 hover:to-teal-500 text-white font-bold shadow-md disabled:opacity-50"
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-700 to-teal-600 hover:from-emerald-600 hover:to-teal-500 text-white font-bold shadow-md disabled:opacity-50 cursor-pointer"
                 >
                   {submitting ? "Menyimpan..." : "Simpan ke Database"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Edit Asatidz */}
+      {editingTeacher && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-lg max-h-[88dvh] sm:max-h-[calc(100dvh-2rem)] flex flex-col rounded-2xl sm:rounded-[28px] liquid-glass-elevated border border-white/60 dark:border-white/10 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            {/* Pinned Header */}
+            <div className="shrink-0 p-4 sm:p-5 border-b border-border/40 flex items-center justify-between">
+              <div>
+                <h3 className="text-base sm:text-lg font-bold text-foreground">Edit Dewan Asatidz</h3>
+                <p className="text-xs text-muted-foreground">Perbarui data guru/asatidz di MongoDB Atlas.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingTeacher(null)}
+                className="p-1.5 rounded-full liquid-glass-pill hover:bg-white/40 dark:hover:bg-white/10 text-muted-foreground hover:text-foreground cursor-pointer"
+                title="Tutup"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateTeacher} className="flex flex-col flex-1 min-h-0 text-xs">
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+                <div>
+                  <label className="block font-semibold text-foreground mb-1">Nama Lengkap &amp; Gelar *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Contoh: Ust. M. Hasan Basri, S.Pd.I"
+                    value={editFormData.name}
+                    onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                    className="w-full p-2.5 rounded-xl liquid-glass-input text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-semibold text-foreground mb-1">NIP *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Contoh: DKS-AS-01"
+                      value={editFormData.nip}
+                      onChange={(e) => setEditFormData({ ...editFormData, nip: e.target.value })}
+                      className="w-full p-2.5 rounded-xl liquid-glass-input text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 font-mono"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-foreground mb-1">Status Keaktifan *</label>
+                    <select
+                      value={editFormData.status}
+                      onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value as "AKTIF" | "CUTI" })}
+                      className="w-full p-2.5 rounded-xl liquid-glass-input text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 cursor-pointer"
+                    >
+                      <option value="AKTIF">AKTIF</option>
+                      <option value="CUTI">CUTI</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-semibold text-foreground mb-1">Lembaga Naungan *</label>
+                    <select
+                      value={editFormData.institution}
+                      onChange={(e) => setEditFormData({ ...editFormData, institution: e.target.value as "MI" | "MTs" | "TPQ" })}
+                      className="w-full p-2.5 rounded-xl liquid-glass-input text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 cursor-pointer"
+                    >
+                      <option value="MI">MI Miftahul Ulum (Aktif)</option>
+                      <option value="MTs">MTs Miftahul Ulum (Persiapan)</option>
+                      <option value="TPQ">TPQ Al-Qur&apos;an Sidogiri</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-foreground mb-1">Jabatan / Peran *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Contoh: Guru Kitab / Wali Kelas"
+                      value={editFormData.role}
+                      onChange={(e) => setEditFormData({ ...editFormData, role: e.target.value })}
+                      className="w-full p-2.5 rounded-xl liquid-glass-input text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-foreground mb-1">Bidang Keahlian / Spesialisasi Kitab *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Contoh: Fathul Qorib, Jurumiyah, Metode Tartil"
+                    value={editFormData.specialization}
+                    onChange={(e) => setEditFormData({ ...editFormData, specialization: e.target.value })}
+                    className="w-full p-2.5 rounded-xl liquid-glass-input text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-semibold text-foreground mb-1">No. WhatsApp / Telepon</label>
+                    <input
+                      type="tel"
+                      placeholder="Contoh: 0812-3456-7890"
+                      value={editFormData.phone}
+                      onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
+                      className="w-full p-2.5 rounded-xl liquid-glass-input text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 font-mono"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-foreground mb-1">Tahun Bergabung</label>
+                    <input
+                      type="number"
+                      value={editFormData.joinedYear}
+                      onChange={(e) => setEditFormData({ ...editFormData, joinedYear: Number(e.target.value) })}
+                      className="w-full p-2.5 rounded-xl liquid-glass-input text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 font-mono"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Pinned Footer */}
+              <div className="shrink-0 p-3.5 sm:p-4 border-t border-border/40 flex items-center justify-end gap-3 bg-background/50 backdrop-blur-md">
+                <button
+                  type="button"
+                  onClick={() => setEditingTeacher(null)}
+                  className="px-4 py-2 rounded-xl liquid-glass-pill hover:bg-white/40 dark:hover:bg-white/10 text-foreground font-semibold cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={editSubmitting}
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-700 to-teal-600 hover:from-emerald-600 hover:to-teal-500 text-white font-bold shadow-md disabled:opacity-50 cursor-pointer"
+                >
+                  {editSubmitting ? "Menyimpan..." : "Perbarui Data"}
                 </button>
               </div>
             </form>
