@@ -79,7 +79,7 @@ export default function NotFound() {
               Tentang Kami
             </Link>
             <Link
-              href="/instansi"
+              href="/institutions"
               className="px-3.5 py-1.5 rounded-full liquid-glass border border-white/30 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
               Madrasah Miftahul Ulum
@@ -91,7 +91,7 @@ export default function NotFound() {
               Galeri Media
             </Link>
             <Link
-              href="/santri-baru"
+              href="/admissions"
               className="px-3.5 py-1.5 rounded-full liquid-glass border border-white/30 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
               Pendaftaran Santri Baru

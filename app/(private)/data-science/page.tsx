@@ -12,6 +12,7 @@ import {
   CheckCircle2, 
   Download 
 } from "lucide-react";
+import { exportCorporateCSV } from "@/lib/export-utils";
 
 export default function DataScienceDashboard() {
 
@@ -38,6 +39,34 @@ export default function DataScienceDashboard() {
     { kitab: "Al-Amtsilah At-Tashrifiyah (Shorof)", tuntas: 92, pengajar: "Asatidz Senior Sidogiri" },
     { kitab: "Metode Tartil & Tahsin Al-Qur'an", tuntas: 98, pengajar: "Markaz Tartil Darul Khidmah Sidogiri Bekasi" },
   ];
+
+  const handleExportCSV = () => {
+    const rows = [
+      ...konsulatData.map((k) => ["Demografi Wilayah", k.nama, k.total, `Mukim: ${k.mukim}`, `Non-Mukim: ${k.nonMukim}`, `${k.persentase}%`]),
+      ...asramaCapacity.map((a) => ["Kapasitas Asrama", a.blok, a.terisi, `Daya Tampung: ${a.kapasitas}`, `Status: ${a.status}`, `Okupansi: ${a.percent}%`]),
+      ...kitabAchievements.map((c) => ["Capaian Kurikulum Kitab", c.kitab, `${c.tuntas}%`, c.pengajar, "Evaluasi Halaqoh", "Standar Tuntas"]),
+    ];
+
+    exportCorporateCSV({
+      filename: "DataScience_DK_Sidogiri_Bekasi",
+      title: "Laporan Dataset Statistik & Analitik Kependidikan",
+      subtitle: "Executive Data Science Dashboard • Pondok Pesantren Sidogiri Ranting Bekasi",
+      metadata: {
+        "Cakupan Data": "Demografi Wilayah, Okupansi Asrama, & Capaian Kurikulum Kitab Kuning",
+        "Total Entitas Dianalisis": "745 Santri Aktif",
+      },
+      columns: [
+        { header: "No", accessor: (_, idx) => idx + 1 },
+        { header: "Kategori Analitik", accessor: (r) => r[0] },
+        { header: "Item / Subjek", accessor: (r) => r[1] },
+        { header: "Total / Nilai Capaian", accessor: (r) => r[2] },
+        { header: "Parameter 1", accessor: (r) => r[3] },
+        { header: "Parameter 2", accessor: (r) => r[4] },
+        { header: "Parameter 3", accessor: (r) => r[5] },
+      ],
+      data: rows,
+    });
+  };
 
   return (
     <div className="w-full transition-colors duration-400 py-6 sm:py-8">
@@ -79,7 +108,8 @@ export default function DataScienceDashboard() {
             <div className="flex items-center gap-2.5">
               <button 
                 type="button"
-                className="liquid-sheen inline-flex items-center gap-2 bg-gradient-to-r from-emerald-700 to-teal-600 text-white px-5 py-2.5 rounded-full text-xs font-semibold shadow-lg hover:shadow-xl transition-all cursor-pointer"
+                onClick={handleExportCSV}
+                className="liquid-sheen inline-flex items-center gap-2 bg-gradient-to-r from-emerald-700 to-teal-600 text-white px-5 py-2.5 rounded-full text-xs font-semibold shadow-lg hover:shadow-xl transition-all cursor-pointer active:scale-95"
               >
                 <Download size={14} />
                 <span>Export Dataset Raw (CSV)</span>
@@ -187,7 +217,7 @@ export default function DataScienceDashboard() {
 
             <div className="pt-4 border-t border-border/40 flex items-center justify-between text-xs text-muted-foreground">
               <span>Konsulat Pasuruan & Madura mencakup 57% dari total populasi madrasah.</span>
-              <span className="text-emerald-700 dark:text-emerald-400 font-semibold">Update: Real-time Supabase</span>
+              <span className="text-emerald-700 dark:text-emerald-400 font-semibold">Update: Real-time MongoDB Atlas</span>
             </div>
           </div>
 

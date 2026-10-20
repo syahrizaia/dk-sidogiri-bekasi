@@ -20,8 +20,10 @@ import {
   Users,
   ShieldCheck,
   GraduationCap,
-  Pencil
+  Pencil,
+  Download
 } from "lucide-react";
+import { exportCorporateCSV } from "@/lib/export-utils";
 
 interface Teacher {
   id: string;
@@ -212,6 +214,31 @@ export default function TeachersPage() {
     };
   }, [teachers]);
 
+  const handleExportTeachersCSV = () => {
+    if (!filteredTeachers.length) return;
+    exportCorporateCSV({
+      filename: "Direktori_Asatidz_DK_Sidogiri",
+      title: "Direktori Resmi Dewan Asatidz & Tenaga Pendidik",
+      subtitle: "Pangkalan Data Asatidz Madrasah Miftahul Ulum & TPQ Tartil Sidogiri",
+      metadata: {
+        "Unit Lembaga": selectedInst === "ALL" ? "Seluruh Lembaga (MI, MTs, TPQ)" : selectedInst,
+        "Kata Kunci Pencarian": searchQuery || "Semua Data",
+      },
+      columns: [
+        { header: "No", accessor: (_, idx) => idx + 1 },
+        { header: "NIP / Kode Asatidz", accessor: "nip", isNumericId: true },
+        { header: "Nama Lengkap Asatidz", accessor: "name" },
+        { header: "Amanah / Jabatan", accessor: "role" },
+        { header: "Unit Pendidikan", accessor: "institution" },
+        { header: "Bidang Keilmuan / Kitab", accessor: "specialization" },
+        { header: "Status Keaktifan", accessor: "status" },
+        { header: "Tahun Bergabung", accessor: "joinedYear" },
+        { header: "No. Kontak WhatsApp", accessor: "phone", isNumericId: true },
+      ],
+      data: filteredTeachers,
+    });
+  };
+
   return (
     <div className="relative min-h-screen py-8 sm:py-10 px-3.5 sm:px-6 lg:px-8 w-full max-w-7xl min-w-0 mx-auto">
       {/* Breadcrumb & Navigation Back */}
@@ -239,23 +266,35 @@ export default function TeachersPage() {
               <span>Direktori Dewan Asatidz Sidogiri</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-              Tenaga Pendidik & Asatidz
+              Tenaga Pendidik &amp; Asatidz
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1 max-w-2xl leading-relaxed">
               Manajemen dan direktori resmi dewan guru, asatidz pengampu kajian kitab kuning, tahsin Al-Qur&apos;an, dan pembina santri MI, MTs persiapan, dan TPQ Sidogiri.
             </p>
           </div>
 
-          {canCreate && (
+          <div className="flex flex-wrap items-center gap-2 self-start md:self-center">
             <button
               type="button"
-              onClick={() => setIsModalOpen(true)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-emerald-700 to-teal-600 hover:from-emerald-600 hover:to-teal-500 text-white text-xs font-bold shadow-lg shadow-emerald-900/20 transition-all hover:scale-[1.02] active:scale-95 cursor-pointer self-start md:self-center"
+              onClick={handleExportTeachersCSV}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full liquid-glass-pill text-xs font-semibold text-foreground hover:bg-white/40 dark:hover:bg-white/10 transition-all cursor-pointer active:scale-95"
+              title="Unduh direktori dewan asatidz dalam format CSV resmi"
             >
-              <Plus size={15} />
-              <span>Tambah Asatidz Baru</span>
+              <Download size={14} />
+              <span>Unduh Laporan (CSV)</span>
             </button>
-          )}
+
+            {canCreate && (
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(true)}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-emerald-700 to-teal-600 hover:from-emerald-600 hover:to-teal-500 text-white text-xs font-bold shadow-lg shadow-emerald-900/20 transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
+              >
+                <Plus size={15} />
+                <span>Tambah Asatidz Baru</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* KPI Counter Cards */}

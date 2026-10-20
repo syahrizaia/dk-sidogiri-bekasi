@@ -39,7 +39,7 @@ export async function submitIzinSantriAction(payload: {
     }
 
     const db = await getDatabase();
-    const collection = db.collection<IzinSantriRecord>("izin_santri");
+    const collection = db.collection<IzinSantriRecord>("leave_requests");
 
     const record: IzinSantriRecord = {
       studentId: payload.studentId || session.studentId || "",

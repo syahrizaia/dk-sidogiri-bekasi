@@ -19,7 +19,8 @@ import {
   Plus,
   Send,
   HeartHandshake,
-  Check
+  Check,
+  CalendarDays
 } from "lucide-react";
 
 interface UserProfile {
@@ -91,8 +92,11 @@ export function TeacherPortalView({ user, currentTime, onLogout, loggingOut }: T
               <UserCheck size={14} />
               <span>Portal Dewan Asatidz &amp; Pengajar Pesantren</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-              Ahlan wa Sahlan, {user.name}
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground flex flex-wrap items-baseline gap-2.5">
+              <span className="font-serif font-bold text-teal-800 dark:text-teal-300 text-3xl sm:text-4xl leading-none">
+                أَهْلاً وَسَهْلاً،
+              </span>
+              <span>{user.name}</span>
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl leading-relaxed">
               Pusat kelola jadwal taklim, buku induk santri bimbingan, rekap mutaba&apos;ah setoran kitab kuning, dan koordinasi langsung dengan wali santri Sidogiri Bekasi.
@@ -212,7 +216,10 @@ export function TeacherPortalView({ user, currentTime, onLogout, loggingOut }: T
               : "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
           }`}
         >
-          📅 Jadwal Mengajar Hari Ini
+          <span className="inline-flex items-center justify-center gap-1.5">
+            <Calendar size={14} />
+            <span>Jadwal Mengajar Hari Ini</span>
+          </span>
         </button>
         <button
           type="button"
@@ -223,7 +230,10 @@ export function TeacherPortalView({ user, currentTime, onLogout, loggingOut }: T
               : "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
           }`}
         >
-          👥 Santri Binaan &amp; Kontak Wali
+          <span className="inline-flex items-center justify-center gap-1.5">
+            <Users size={14} />
+            <span>Santri Binaan &amp; Kontak Wali</span>
+          </span>
         </button>
         <button
           type="button"
@@ -234,7 +244,10 @@ export function TeacherPortalView({ user, currentTime, onLogout, loggingOut }: T
               : "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
           }`}
         >
-          📝 Jurnal &amp; Mutaba&apos;ah Setoran
+          <span className="inline-flex items-center justify-center gap-1.5">
+            <BookOpen size={14} />
+            <span>Jurnal &amp; Mutaba&apos;ah Setoran</span>
+          </span>
         </button>
         <button
           type="button"
@@ -245,7 +258,10 @@ export function TeacherPortalView({ user, currentTime, onLogout, loggingOut }: T
               : "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
           }`}
         >
-          📆 Kalender Akademik &amp; Imtihan
+          <span className="inline-flex items-center justify-center gap-1.5">
+            <CalendarDays size={14} />
+            <span>Kalender Akademik &amp; Imtihan</span>
+          </span>
         </button>
       </div>
 

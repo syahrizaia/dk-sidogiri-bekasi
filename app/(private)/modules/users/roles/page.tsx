@@ -38,6 +38,8 @@ import {
   BookOpen,
   Building2,
   Compass,
+  WalletCards,
+  UserPlus,
 } from "lucide-react";
 
 interface ModuleMeta {
@@ -83,6 +85,14 @@ const MODULES_META: ModuleMeta[] = [
     category: "Akademik",
   },
   {
+    key: "admissions",
+    title: "Pendaftaran Santri Baru (Admissions)",
+    path: "/modules/admissions",
+    icon: UserPlus,
+    description: "Verifikasi pendaftaran online calon santri baru MI/MTs/TPQ, seleksi berkas, dan penetapan status kelulusan.",
+    category: "Akademik",
+  },
+  {
     key: "mi",
     title: "Madrasah Ibtidaiyah (MI)",
     path: "/modules/mi",
@@ -120,6 +130,14 @@ const MODULES_META: ModuleMeta[] = [
     path: "/modules/media",
     icon: ImageIcon,
     description: "Pengelolaan arsip foto, video kajian, dan publikasi syiar dakwah ke galeri publik.",
+    category: "Fasilitas",
+  },
+  {
+    key: "finance",
+    title: "Keuangan & Tagihan Santri",
+    path: "/modules/finance",
+    icon: WalletCards,
+    description: "Pusat transaksi kas masuk/keluar, pembayaran iuran syahriyah (SPP), dan cetak kwitansi.",
     category: "Fasilitas",
   },
   {

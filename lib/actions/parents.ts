@@ -130,7 +130,7 @@ export async function getParentsAction(): Promise<{ success: boolean; data?: Par
   try {
     const db = await getDatabase();
     const collection = db.collection("parents");
-    const santriCollection = db.collection("santri");
+    const santriCollection = db.collection("students");
 
     const count = await collection.countDocuments();
     if (count === 0) {
@@ -208,7 +208,7 @@ export async function createParentAction(payload: {
 
     const db = await getDatabase();
     const collection = db.collection("parents");
-    const santriCollection = db.collection("santri");
+    const santriCollection = db.collection("students");
 
     const newRecord = {
       name: String(name).trim(),
@@ -274,7 +274,7 @@ export async function updateParentAction(id: string, payload: Partial<ParentReco
 
     const db = await getDatabase();
     const collection = db.collection("parents");
-    const santriCollection = db.collection("santri");
+    const santriCollection = db.collection("students");
 
     let query: Record<string, unknown> = { id };
     if (ObjectId.isValid(id)) {

@@ -315,7 +315,9 @@ export default function DashboardLanding() {
 
               <button 
                 type="button"
-                className="liquid-sheen self-start sm:self-auto inline-flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full liquid-glass-pill hover:text-emerald-700 dark:hover:text-emerald-300 transition-all cursor-pointer"
+                onClick={() => window.print()}
+                className="liquid-sheen self-start sm:self-auto inline-flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full liquid-glass-pill hover:text-emerald-700 dark:hover:text-emerald-300 transition-all cursor-pointer active:scale-95"
+                title="Cetak atau simpan rekap data santri"
               >
                 <Download size={14} />
                 <span>Cetak Rekap Laporan</span>

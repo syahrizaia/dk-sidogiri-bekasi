@@ -23,10 +23,13 @@ import {
   ChevronRight, 
   LogOut,
   Send,
-  FileText
+  FileText,
+  CreditCard,
+  Megaphone,
+  X
 } from "lucide-react";
 import { getStudentsAction, SantriRecord } from "@/lib/actions/students";
-import { submitIzinSantriAction } from "@/lib/actions/izin";
+import { submitIzinSantriAction } from "@/lib/actions/leave-requests";
 
 interface UserProfile {
   id: string;
@@ -148,8 +151,11 @@ export function ParentPortalView({ user, currentTime, onLogout, loggingOut }: Pa
               <HeartHandshake size={14} />
               <span>Portal Resmi Keluarga &amp; Wali Santri</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-              Ahlan wa Sahlan, Bapak/Ibu {user.name}
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground flex flex-wrap items-baseline gap-2.5">
+              <span className="font-serif font-bold text-amber-800 dark:text-amber-300 text-3xl sm:text-4xl leading-none">
+                أَهْلاً وَسَهْلاً،
+              </span>
+              <span>Bapak/Ibu {user.name}</span>
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl leading-relaxed">
               Pantau perkembangan ubudiyah, capaian kitab kuning &amp; Al-Qur&apos;an, kedisiplinan asrama, serta koordinasi terpadu dengan asatidz Darul Khidmah Sidogiri Bekasi.
@@ -274,7 +280,10 @@ export function ParentPortalView({ user, currentTime, onLogout, loggingOut }: Pa
               : "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
           }`}
         >
-          📖 Akademik &amp; Kitab
+          <span className="inline-flex items-center justify-center gap-1.5">
+            <BookOpen size={14} />
+            <span>Akademik &amp; Kitab</span>
+          </span>
         </button>
         <button
           type="button"
@@ -285,7 +294,10 @@ export function ParentPortalView({ user, currentTime, onLogout, loggingOut }: Pa
               : "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
           }`}
         >
-          🛏️ Asrama &amp; Sambangan
+          <span className="inline-flex items-center justify-center gap-1.5">
+            <BedDouble size={14} />
+            <span>Asrama &amp; Sambangan</span>
+          </span>
         </button>
         <button
           type="button"
@@ -296,7 +308,10 @@ export function ParentPortalView({ user, currentTime, onLogout, loggingOut }: Pa
               : "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
           }`}
         >
-          💳 Syahriyah &amp; Infaq
+          <span className="inline-flex items-center justify-center gap-1.5">
+            <CreditCard size={14} />
+            <span>Syahriyah &amp; Infaq</span>
+          </span>
         </button>
         <button
           type="button"
@@ -307,7 +322,10 @@ export function ParentPortalView({ user, currentTime, onLogout, loggingOut }: Pa
               : "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
           }`}
         >
-          📢 Maklumat Yayasan
+          <span className="inline-flex items-center justify-center gap-1.5">
+            <Megaphone size={14} />
+            <span>Maklumat Yayasan</span>
+          </span>
         </button>
       </div>
 
@@ -460,12 +478,18 @@ export function ParentPortalView({ user, currentTime, onLogout, loggingOut }: Pa
             <div className="p-4 rounded-2xl liquid-glass border border-border/40 space-y-1 text-xs">
               <span className="text-muted-foreground text-[11px]">Syahriyah Oktober 2026:</span>
               <p className="font-black text-foreground text-base">Rp 650.000</p>
-              <span className="text-[10px] text-emerald-600 font-bold block">✓ Lunas (05 Okt 2026)</span>
+              <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
+                <CheckCircle2 size={11} />
+                <span>Lunas (05 Okt 2026)</span>
+              </span>
             </div>
             <div className="p-4 rounded-2xl liquid-glass border border-border/40 space-y-1 text-xs">
               <span className="text-muted-foreground text-[11px]">Infaq Makan &amp; Asrama:</span>
               <p className="font-black text-foreground text-base">Termasuk Paket</p>
-              <span className="text-[10px] text-emerald-600 font-bold block">✓ 3x Makan Sehat Harian</span>
+              <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
+                <CheckCircle2 size={11} />
+                <span>3x Makan Sehat Harian</span>
+              </span>
             </div>
             <div className="p-4 rounded-2xl liquid-glass border border-border/40 space-y-1 text-xs">
               <span className="text-muted-foreground text-[11px]">Infaq Pembangunan Asrama:</span>
@@ -563,7 +587,7 @@ export function ParentPortalView({ user, currentTime, onLogout, loggingOut }: Pa
           </Link>
 
           <Link
-            href="/instansi/mi"
+            href="/institutions/mi"
             className="p-4 rounded-2xl liquid-glass border border-border/40 hover:border-amber-500/40 transition-all flex items-center justify-between group"
           >
             <div className="flex items-center gap-3">
@@ -600,9 +624,10 @@ export function ParentPortalView({ user, currentTime, onLogout, loggingOut }: Pa
               <button 
                 type="button" 
                 onClick={() => setIzinModalOpen(false)}
-                className="text-muted-foreground hover:text-foreground text-xs p-1"
+                className="text-muted-foreground hover:text-foreground p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                title="Tutup Modal"
               >
-                ✕
+                <X size={16} />
               </button>
             </div>
 

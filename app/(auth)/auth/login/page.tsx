@@ -15,7 +15,11 @@ import {
   AlertCircle, 
   CheckCircle2,
   ShieldCheck,
-  Sparkles
+  Sparkles,
+  Award,
+  GraduationCap,
+  Users,
+  ClipboardCheck
 } from "lucide-react";
 
 function LoginForm() {
@@ -225,66 +229,71 @@ function LoginForm() {
                 <button
                   type="button"
                   onClick={() => handleFillDemo("admin")}
-                  className={`px-2 py-1.5 rounded-xl text-[11px] font-semibold transition-all flex flex-col items-center gap-0.5 border cursor-pointer ${
+                  className={`px-2 py-1.5 rounded-xl text-[11px] font-semibold transition-all flex flex-col items-center gap-1 border cursor-pointer ${
                     selectedDemoRole === "admin"
                       ? "bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-500/40 shadow-sm"
                       : "bg-white/60 dark:bg-black/40 text-muted-foreground hover:text-foreground border-white/40 dark:border-white/10 hover:border-emerald-500/30"
                   }`}
                   title="Super Admin (admin@sidogiri-bekasi.sch.id)"
                 >
-                  <span className="text-xs">🛡️ Admin</span>
+                  <ShieldCheck size={14} className="text-rose-600 dark:text-rose-400" />
+                  <span className="text-xs font-bold">Admin</span>
                   <span className="text-[9px] opacity-75">Utama</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => handleFillDemo("ketua")}
-                  className={`px-2 py-1.5 rounded-xl text-[11px] font-semibold transition-all flex flex-col items-center gap-0.5 border cursor-pointer ${
+                  className={`px-2 py-1.5 rounded-xl text-[11px] font-semibold transition-all flex flex-col items-center gap-1 border cursor-pointer ${
                     selectedDemoRole === "ketua"
                       ? "bg-purple-500/20 text-purple-800 dark:text-purple-300 border-purple-500/40 shadow-sm"
                       : "bg-white/60 dark:bg-black/40 text-muted-foreground hover:text-foreground border-white/40 dark:border-white/10 hover:border-emerald-500/30"
                   }`}
                   title="Ketua Ranting (ketua@sidogiri-bekasi.sch.id)"
                 >
-                  <span className="text-xs">👑 Ketua</span>
+                  <Award size={14} className="text-purple-600 dark:text-purple-400" />
+                  <span className="text-xs font-bold">Ketua</span>
                   <span className="text-[9px] opacity-75">Ranting</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => handleFillDemo("guru")}
-                  className={`px-2 py-1.5 rounded-xl text-[11px] font-semibold transition-all flex flex-col items-center gap-0.5 border cursor-pointer ${
+                  className={`px-2 py-1.5 rounded-xl text-[11px] font-semibold transition-all flex flex-col items-center gap-1 border cursor-pointer ${
                     selectedDemoRole === "guru"
                       ? "bg-teal-500/20 text-teal-800 dark:text-teal-300 border-teal-500/40 shadow-sm"
                       : "bg-white/60 dark:bg-black/40 text-muted-foreground hover:text-foreground border-white/40 dark:border-white/10 hover:border-emerald-500/30"
                   }`}
                   title="Dewan Asatidz / Guru (guru@sidogiri-bekasi.sch.id)"
                 >
-                  <span className="text-xs">🎓 Guru</span>
+                  <GraduationCap size={14} className="text-teal-600 dark:text-teal-400" />
+                  <span className="text-xs font-bold">Guru</span>
                   <span className="text-[9px] opacity-75">Asatidz</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => handleFillDemo("wali")}
-                  className={`px-2 py-1.5 rounded-xl text-[11px] font-semibold transition-all flex flex-col items-center gap-0.5 border cursor-pointer ${
+                  className={`px-2 py-1.5 rounded-xl text-[11px] font-semibold transition-all flex flex-col items-center gap-1 border cursor-pointer ${
                     selectedDemoRole === "wali"
                       ? "bg-indigo-500/20 text-indigo-800 dark:text-indigo-300 border-indigo-500/40 shadow-sm"
                       : "bg-white/60 dark:bg-black/40 text-muted-foreground hover:text-foreground border-white/40 dark:border-white/10 hover:border-emerald-500/30"
                   }`}
                   title="Wali Santri (wali@sidogiri-bekasi.sch.id)"
                 >
-                  <span className="text-xs">👨‍👩‍👧 Wali</span>
+                  <Users size={14} className="text-indigo-600 dark:text-indigo-400" />
+                  <span className="text-xs font-bold">Wali</span>
                   <span className="text-[9px] opacity-75">Santri</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => handleFillDemo("staf")}
-                  className={`col-span-2 sm:col-span-1 px-2 py-1.5 rounded-xl text-[11px] font-semibold transition-all flex flex-col items-center gap-0.5 border cursor-pointer ${
+                  className={`col-span-2 sm:col-span-1 px-2 py-1.5 rounded-xl text-[11px] font-semibold transition-all flex flex-col items-center gap-1 border cursor-pointer ${
                     selectedDemoRole === "staf"
                       ? "bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-500/40 shadow-sm"
                       : "bg-white/60 dark:bg-black/40 text-muted-foreground hover:text-foreground border-white/40 dark:border-white/10 hover:border-emerald-500/30"
                   }`}
                   title="Staf Administrasi (staf@sidogiri-bekasi.sch.id)"
                 >
-                  <span className="text-xs">📋 Staf</span>
+                  <ClipboardCheck size={14} className="text-amber-600 dark:text-amber-400" />
+                  <span className="text-xs font-bold">Staf</span>
                   <span className="text-[9px] opacity-75">Admin</span>
                 </button>
               </div>

@@ -139,6 +139,52 @@ export async function getMediaAction(all = false): Promise<{ success: boolean; d
   }
 }
 
+export async function getMediaByIdAction(id: string): Promise<{ success: boolean; data?: MediaItem; error?: string }> {
+  try {
+    if (!id || typeof id !== "string") {
+      return { success: false, error: "ID media tidak valid." };
+    }
+
+    const db = await getDatabase();
+    const mediaCollection = db.collection("media");
+
+    const totalMedia = await mediaCollection.countDocuments();
+    if (totalMedia === 0) {
+      await mediaCollection.insertMany(DEFAULT_MEDIA_SEEDS);
+    }
+
+    let query: Record<string, unknown> = { id };
+    if (ObjectId.isValid(id)) {
+      query = { $or: [{ _id: new ObjectId(id) }, { id }] };
+    }
+
+    const item = await mediaCollection.findOne(query);
+    if (!item) {
+      return { success: false, error: "Media tidak ditemukan." };
+    }
+
+    const formatted: MediaItem = {
+      _id: item._id.toString(),
+      title: item.title,
+      category: item.category,
+      type: item.type,
+      url: item.url,
+      thumbnail: item.thumbnail || item.url,
+      duration: item.duration,
+      description: item.description,
+      date: item.date,
+      author: item.author,
+      published: item.published !== false,
+      createdAt: item.createdAt,
+    };
+
+    return { success: true, data: serializeData(formatted) };
+  } catch (error) {
+    console.error("Error in getMediaByIdAction:", error);
+    return { success: false, error: "Gagal memuat detail media." };
+  }
+}
+
 export async function createMediaAction(payload: {
   title: string;
   category: "Kegiatan Santri" | "Kajian Kitab Kuning" | "Prestasi" | "Fasilitas" | "Video Liputan";

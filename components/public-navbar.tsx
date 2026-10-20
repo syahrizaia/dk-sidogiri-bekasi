@@ -129,10 +129,10 @@ export function PublicNavbar() {
             onMouseLeave={handleMouseLeave}
           >
             <Link
-              href="/instansi"
+              href="/institutions"
               onClick={() => setIsInstansiOpen(false)}
               className={`text-xs font-medium px-4 py-1.5 rounded-full transition-all duration-200 flex items-center gap-1.5 cursor-pointer ${
-                isCurrent("/instansi") 
+                isCurrent("/institutions") 
                   ? "bg-white/60 dark:bg-white/15 text-emerald-700 dark:text-emerald-300 font-semibold shadow-sm" 
                   : "text-foreground/85 hover:text-foreground hover:bg-white/50 dark:hover:bg-white/10"
               }`}
@@ -159,7 +159,7 @@ export function PublicNavbar() {
                 <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border/40 mb-1.5 flex items-center justify-between">
                   <span>Lembaga Pendidikan</span>
                   <Link 
-                    href="/instansi" 
+                    href="/institutions" 
                     onClick={() => setIsInstansiOpen(false)}
                     className="text-emerald-600 dark:text-emerald-400 hover:underline text-[10px]"
                   >
@@ -167,7 +167,7 @@ export function PublicNavbar() {
                   </Link>
                 </div>
                 <Link 
-                  href="/instansi/mi" 
+                  href="/institutions/mi" 
                   onClick={() => setIsInstansiOpen(false)}
                   className="flex items-center gap-2.5 text-xs p-2.5 rounded-xl hover:bg-emerald-500/10 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
                 >
@@ -180,7 +180,7 @@ export function PublicNavbar() {
                   </div>
                 </Link>
                 <Link 
-                  href="/instansi/mts" 
+                  href="/institutions/mts" 
                   onClick={() => setIsInstansiOpen(false)}
                   className="flex items-center gap-2.5 text-xs p-2.5 rounded-xl hover:bg-emerald-500/10 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
                 >
@@ -196,7 +196,7 @@ export function PublicNavbar() {
                   </div>
                 </Link>
                 <Link 
-                  href="/instansi/tpq" 
+                  href="/institutions/tpq" 
                   onClick={() => setIsInstansiOpen(false)}
                   className="flex items-center gap-2.5 text-xs p-2.5 rounded-xl hover:bg-emerald-500/10 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
                 >
@@ -265,7 +265,7 @@ export function PublicNavbar() {
             
           {/* Liquid Sheen CTA Button */}
           <Link 
-            href="/santri-baru"
+            href="/admissions"
             className="liquid-sheen relative flex items-center gap-2 bg-gradient-to-r from-emerald-700 via-emerald-600 to-teal-600 hover:from-emerald-600 hover:to-teal-500 text-white px-4 py-2 rounded-full text-xs font-semibold shadow-lg shadow-emerald-900/15 hover:shadow-emerald-700/25 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
           >
             <UserPlus size={14} className="stroke-[2.5]" />
@@ -330,7 +330,7 @@ export function PublicNavbar() {
               Unit Pendidikan Darul Khidmah Sidogiri Bekasi
             </p>
             <Link 
-              href="/instansi/mi" 
+              href="/institutions/mi" 
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-2 text-xs p-2.5 rounded-2xl hover:bg-emerald-500/10 text-foreground/90 pl-3 transition-colors"
             >
@@ -338,7 +338,7 @@ export function PublicNavbar() {
               <span>Madrasah Ibtidaiyah (MI) - Aktif</span>
             </Link>
             <Link 
-              href="/instansi/mts" 
+              href="/institutions/mts" 
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-2 text-xs p-2.5 rounded-2xl hover:bg-emerald-500/10 text-foreground/90 pl-3 transition-colors"
             >
@@ -346,7 +346,7 @@ export function PublicNavbar() {
               <span>Madrasah Tsanawiyah (MTs) - Tahun Depan</span>
             </Link>
             <Link 
-              href="/instansi/tpq" 
+              href="/institutions/tpq" 
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-2 text-xs p-2.5 rounded-2xl hover:bg-emerald-500/10 text-foreground/90 pl-3 transition-colors"
             >
@@ -374,7 +374,7 @@ export function PublicNavbar() {
               <span>Masuk Portal</span>
             </Link>
             <Link 
-              href="/santri-baru"
+              href="/admissions"
               onClick={() => setIsOpen(false)}
               className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-700 to-teal-600 text-white p-2.5 rounded-full text-xs font-semibold shadow-md transition-all active:scale-95"
             >

@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://sidogiri-bekasi.sch.id";
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://dksidogiribekasi.vercel.app";
 
   return {
     rules: [
@@ -21,8 +21,6 @@ export default function robots(): MetadataRoute.Robots {
           "/data-science/*",
           "/settings",
           "/settings/*",
-          "/santri",
-          "/santri/*",
           "/api/*",
           "/auth/*",
         ],

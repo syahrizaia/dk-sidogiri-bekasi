@@ -5,13 +5,13 @@ export const metadata: Metadata = {
   description:
     "Lembaga pendidikan di bawah naungan Darul Khidmah Sidogiri Bekasi: Madrasah Ibtidaiyah (MI) Miftahul Ulum, persiapan pembukaan MTs Miftahul Ulum, dan TPQ Metode Tartil Sidogiri.",
   alternates: {
-    canonical: "/instansi",
+    canonical: "/institutions",
   },
   openGraph: {
     title: "Unit Pendidikan & Lembaga | Darul Khidmah Sidogiri Bekasi",
     description:
       "Lembaga pendidikan di bawah naungan Darul Khidmah Sidogiri Bekasi: Madrasah Ibtidaiyah (MI) Miftahul Ulum, persiapan pembukaan MTs Miftahul Ulum, dan TPQ Metode Tartil Sidogiri.",
-    url: "/instansi",
+    url: "/institutions",
     images: [
       {
         url: "/logo-sidogiri.jpeg",
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function InstansiLayout({
+export default function InstitutionsLayout({
   children,
 }: {
   children: React.ReactNode;

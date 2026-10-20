@@ -22,7 +22,8 @@ import {
   ExternalLink,
   ChevronRight,
   TrendingUp,
-  HeartHandshake
+  HeartHandshake,
+  BarChart3
 } from "lucide-react";
 import { getStudentsAction, SantriRecord } from "@/lib/actions/students";
 import { getTeachersAction, TeacherRecord } from "@/lib/actions/teachers";
@@ -138,8 +139,11 @@ export function ExecutivePortalView({ user, currentTime, onLogout, loggingOut }:
               <Building2 size={14} />
               <span>Portal Eksekutif &amp; Manajerial Ketua Ranting</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-              Ahlan wa Sahlan, {user.name}
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground flex flex-wrap items-baseline gap-2.5">
+              <span className="font-serif font-bold text-purple-800 dark:text-purple-300 text-3xl sm:text-4xl leading-none">
+                أَهْلاً وَسَهْلاً،
+              </span>
+              <span>{user.name}</span>
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl leading-relaxed">
               Pusat monitoring manajerial pimpinan: tinjau perkembangan pendidikan seluruh unit (MI, MTs, TPQ), okupansi asrama, kualifikasi dewan asatidz, serta pertumbuhan santri Sidogiri Bekasi.
@@ -348,7 +352,10 @@ export function ExecutivePortalView({ user, currentTime, onLogout, loggingOut }:
               : "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
           }`}
         >
-          📊 Ringkasan Manajerial
+          <span className="inline-flex items-center justify-center gap-1.5">
+            <BarChart3 size={14} />
+            <span>Ringkasan Manajerial</span>
+          </span>
         </button>
         <button
           type="button"
@@ -359,7 +366,10 @@ export function ExecutivePortalView({ user, currentTime, onLogout, loggingOut }:
               : "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
           }`}
         >
-          🏫 Unit Pendidikan (MI/MTs/TPQ)
+          <span className="inline-flex items-center justify-center gap-1.5">
+            <Building2 size={14} />
+            <span>Unit Pendidikan (MI/MTs/TPQ)</span>
+          </span>
         </button>
         <button
           type="button"
@@ -370,7 +380,10 @@ export function ExecutivePortalView({ user, currentTime, onLogout, loggingOut }:
               : "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
           }`}
         >
-          🛏️ Pemantauan Asrama
+          <span className="inline-flex items-center justify-center gap-1.5">
+            <BedDouble size={14} />
+            <span>Pemantauan Asrama</span>
+          </span>
         </button>
         <button
           type="button"
@@ -381,7 +394,10 @@ export function ExecutivePortalView({ user, currentTime, onLogout, loggingOut }:
               : "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
           }`}
         >
-          👳‍♂️ Direktori Dewan Asatidz
+          <span className="inline-flex items-center justify-center gap-1.5">
+            <GraduationCap size={14} />
+            <span>Direktori Dewan Asatidz</span>
+          </span>
         </button>
       </div>
 

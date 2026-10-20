@@ -10,8 +10,6 @@ const protectedRoutes = [
   "/parents",
   "/data-science",
   "/settings",
-  "/santri",
-  "/pengaturan",
 ];
 
 // Rute autentikasi publik (jika sudah login, redirect langsung ke /modules)
@@ -26,6 +24,11 @@ export function proxy(request: NextRequest) {
   // Redirect pendaftaran akun langsung ke /auth/login karena seluruh akun dibuat oleh Super Admin
   if (pathname === "/register" || pathname === "/auth/register" || pathname.startsWith("/auth/register/")) {
     return NextResponse.redirect(new URL("/auth/login", request.url));
+  }
+
+  // Redirect legacy /santri-baru ke rute baru publik /admissions
+  if (pathname === "/santri-baru" || pathname.startsWith("/santri-baru/")) {
+    return NextResponse.redirect(new URL("/admissions", request.url));
   }
 
   // 0. Defense Against NoSQL / Injection Payload in Search Query
@@ -72,12 +75,10 @@ export function proxy(request: NextRequest) {
       }
     }
 
-    // 2. Pengaturan & Sistem (/settings, /pengaturan): HANYA Super Admin & Ketua Ranting
+    // 2. Pengaturan & Sistem (/settings): HANYA Super Admin & Ketua Ranting
     if (
       pathname === "/settings" ||
-      pathname.startsWith("/settings/") ||
-      pathname === "/pengaturan" ||
-      pathname.startsWith("/pengaturan/")
+      pathname.startsWith("/settings/")
     ) {
       if (session.role !== "super_admin" && session.role !== "ketua_ranting") {
         return NextResponse.redirect(new URL("/modules?error=unauthorized", request.url));
@@ -99,6 +100,22 @@ export function proxy(request: NextRequest) {
       pathname.startsWith("/parents/")
     ) {
       if (session.role === "wali_santri") {
+        return NextResponse.redirect(new URL("/modules?error=unauthorized", request.url));
+      }
+    }
+
+    // 5. Modul Keuangan & Tagihan (/modules/finance): HANYA BISA DIAKSES oleh Super Admin, Ketua Ranting, dan Staf Administrasi
+    if (pathname === "/modules/finance" || pathname.startsWith("/modules/finance/")) {
+      const allowedRoles = ["super_admin", "ketua_ranting", "staf_administrasi"];
+      if (!allowedRoles.includes(session.role)) {
+        return NextResponse.redirect(new URL("/modules?error=unauthorized", request.url));
+      }
+    }
+
+    // 6. Modul Pendaftaran Santri Baru (/modules/admissions): HANYA BISA DIAKSES oleh Super Admin, Ketua Ranting, dan Staf Administrasi
+    if (pathname === "/modules/admissions" || pathname.startsWith("/modules/admissions/")) {
+      const allowedRoles = ["super_admin", "ketua_ranting", "staf_administrasi"];
+      if (!allowedRoles.includes(session.role)) {
         return NextResponse.redirect(new URL("/modules?error=unauthorized", request.url));
       }
     }

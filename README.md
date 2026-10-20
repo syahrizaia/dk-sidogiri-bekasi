@@ -1,7 +1,8 @@
-# 🌿 Darul Khidmah Sidogiri Bekasi
+# Darul Khidmah Sidogiri Bekasi
 ### *Enterprise Integrated Education System & Salafiyah Digital Portal*
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.2.7-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![Deployment](https://img.shields.io/badge/Production-dksidogiribekasi.vercel.app-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://dksidogiribekasi.vercel.app)
 [![React](https://img.shields.io/badge/React-19.2.4-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
@@ -12,7 +13,7 @@
 
 ---
 
-## 📌 Ikhtisar Platform
+## Ikhtisar Platform
 
 **Darul Khidmah Sidogiri Bekasi** adalah platform manajemen pendidikan dan sistem informasi kepesantrenan generasi terbaru yang mengintegrasikan seluruh lini akademik, administrasi, dan asrama di bawah naungan Pondok Pesantren Sidogiri di wilayah Bekasi, Jawa Barat.
 
@@ -26,9 +27,9 @@ Dibangun dengan arsitektur **Next.js 16 App Router**, **React 19**, dan basis da
 
 ---
 
-## ✨ Fitur Unggulan
+## Fitur Unggulan
 
-### 1. 💎 Antarmuka Apple Liquid Glass (visionOS / macOS Spec)
+### 1. Antarmuka Apple Liquid Glass (visionOS / macOS Spec)
 *Merujuk pada spesifikasi resmi [Apple Developer Liquid Glass](https://developer.apple.com/documentation/technologyoverviews/liquid-glass) dan [Apple Human Interface Guidelines (HIG) - Materials](https://developer.apple.com/design/human-interface-guidelines/materials)*:
 - **Dua Varian Material Resmi Apple:**
   - **Regular Variant (`.liquid-glass`):** Material fungsional utama untuk floating capsule navbars, sidebars, sheets, dan modul popovers. Mengatur refraksi dan saturasi `blur(32px) saturate(210%)` demi menjamin ketajaman teks di atas latar dinamis.
@@ -38,12 +39,12 @@ Dibangun dengan arsitektur **Next.js 16 App Router**, **React 19**, dan basis da
 - **Wadah Efek Kaca Terpadu (`.glass-effect-container`):** Koordinasi multi-elemen kaca bersarang (*nested views*) yang membaurkan bayangan dan refraksi secara konsentris.
 - **Dual Mode Estetik Khas Pesantren:** *Pristine Alabaster Glass* pada Light Mode dan *Obsidian Smoked Glass & Deep Jade* pada Dark Mode.
 
-### 2. 🛡️ Keamanan Zero Network Exposure
+### 2. Keamanan Zero Network Exposure
 - **Server Actions & Server Components Exclusive:** Seluruh mutasi data dan kueri database dieksekusi secara privat di sisi server menggunakan direktif `"use server"` dan proteksi `import "server-only"`. Tidak ada API credentials, koneksi database string, atau kueri MongoDB yang terpapar ke browser client.
 - **Perimeter Edge Defense ([proxy.ts](file:///Users/syahrizaalsistani/Documents/Projects/dk-sidogiri/proxy.ts)):** Inspeksi otomatis terhadap pola injeksi NoSQL (`$where`, `$regex`, `$gt`, `{"$`) dan upaya XSS berbahaya di seluruh query string dan URL parameter dengan respon langsung HTTP 400 Bad Request.
 - **Enterprise HTTP Security Headers:** Konfigurasi CSP (*Content Security Policy*) ketat, HSTS Preload 2 tahun (`max-age=63072000; includeSubDomains; preload`), `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, serta pemblokiran sensor perangkat via `Permissions-Policy`.
 
-### 3. 📚 Modul Sistem Akademik & Tata Kelola Santri
+### 3. Modul Sistem Akademik & Tata Kelola Santri
 - **Buku Induk Santri:** Rekam data santri aktif, alumni, nomor induk pesantren (NIS), riwayat kelas, dan status mukim/non-mukim.
 - **Manajemen Dewan Asatidz:** Data guru madrasah, bidang keahlian kitab kuning, dan jadwal mengajar halaqoh.
 - **Portal Wali Santri:** Monitoring hafalan, rekam presensi, catatan disiplin, dan pelaporan SPP bulanan.
@@ -52,14 +53,14 @@ Dibangun dengan arsitektur **Next.js 16 App Router**, **React 19**, dan basis da
 - **Pusat Galeri Media:** Katalog dokumentasi foto dan video kajian salafiyah, wisuda tartil, dan kegiatan hari santri.
 - **Kecerdasan Buatan & Data Science Santri:** Dasbor visualisasi performa santri, prediksi kelulusan, dan analitik distribusi santri.
 
-### 4. 🚀 Optimasi SEO Teknis & Metadata
+### 4. Optimasi SEO Teknis & Metadata
 - **Sitemap Dinamis XML (`/sitemap.xml`):** Mengindeks otomatis seluruh entitas profil dan madrasah dengan prioritas pencarian Google.
 - **Robots Directive (`/robots.txt`):** Melindungi direktori internal sistem dan mengarahkan crawler mesin pencari ke rute publik.
 - **Schema.org JSON-LD:** Penanda terstruktur `@graph` kategori `EducationalOrganization` dan `LocalBusiness` lengkap dengan geo-koordinat Bekasi.
 
 ---
 
-## 🏛️ Arsitektur Sistem
+## Arsitektur Sistem
 
 ```
 dk-sidogiri/
@@ -76,9 +77,8 @@ dk-sidogiri/
 │   │   └── settings/            # Pengaturan Sistem & Profil Lembaga
 │   ├── (public)/                # Halaman Informasi Terbuka Publik
 │   │   ├── about/               # Profil, Sejarah, & Dewan Pengasuh
-│   │   ├── instansi/            # Unit Pendidikan (MI, MTs, TPQ)
+│   │   ├── institutions/        # Unit Pendidikan (MI, MTs, TPQ)
 │   │   ├── media/               # Galeri Foto & Dokumentasi Acara
-│   │   ├── santri-baru/         # Portal Formulir PSB Online
 │   │   └── page.tsx             # Beranda Interaktif Publik
 │   ├── api/                     # REST API Handlers Terproteksi
 │   ├── globals.css              # Apple Liquid Glass Tokens, Mesh Aura, & Animations
@@ -115,20 +115,20 @@ dk-sidogiri/
 
 ---
 
-## 👥 Matriks Hak Akses (Role-Based Access Control)
+## Matriks Hak Akses (Role-Based Access Control)
 
 | Peran Pengguna | Dasbor Modul | Buku Induk Santri | Dewan Asatidz | Wali Santri | Manajemen Asrama | Analisis Data | Pengaturan Sistem |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| **Super Admin** | ✅ Penuh | ✅ Penuh | ✅ Penuh | ✅ Penuh | ✅ Penuh | ✅ Penuh | ✅ Penuh |
-| **Admin** | ✅ Penuh | ✅ Penuh | ✅ Penuh | ✅ Penuh | ✅ Penuh | ✅ Penuh | 🔒 Terbatas |
-| **Pengasuh** | ✅ Baca | ✅ Baca | ✅ Baca | ✅ Baca | ✅ Baca | ✅ Baca | 🔒 Tertutup |
-| **Ustadz / Asatidz** | ✅ Modul | ✅ Input Nilai | 👁️ Profil | 🔒 Tertutup | 👁️ Izin Asrama | 🔒 Tertutup | 🔒 Tertutup |
-| **Wali Santri** | 🔒 Tertutup | 👁️ Santri Sendiri | 👁️ Kontak Guru | ✅ Tagihan/SPP | 👁️ Asrama Anak | 🔒 Tertutup | 🔒 Tertutup |
-| **Santri** | 🔒 Tertutup | 👁️ Biodata Sendiri | 👁️ Jadwal | 🔒 Tertutup | 👁️ Bilik Sendiri | 🔒 Tertutup | 🔒 Tertutup |
+| **Super Admin** | Penuh | Penuh | Penuh | Penuh | Penuh | Penuh | Penuh |
+| **Admin** | Penuh | Penuh | Penuh | Penuh | Penuh | Penuh | Terbatas |
+| **Pengasuh** | Baca | Baca | Baca | Baca | Baca | Baca | Tertutup |
+| **Ustadz / Asatidz** | Modul | Input Nilai | Profil | Tertutup | Izin Asrama | Tertutup | Tertutup |
+| **Wali Santri** | Tertutup | Santri Sendiri | Kontak Guru | Tagihan/SPP | Asrama Anak | Tertutup | Tertutup |
+| **Santri** | Tertutup | Biodata Sendiri | Jadwal | Tertutup | Bilik Sendiri | Tertutup | Tertutup |
 
 ---
 
-## 🛠️ Persyaratan Lingkungan (Prerequisites)
+## Persyaratan Lingkungan (Prerequisites)
 
 Sebelum menjalankan aplikasi, pastikan environment Anda telah terpasang:
 - **Node.js:** Versi `20.x` atau lebih baru (Disarankan Node LTS).
@@ -137,7 +137,7 @@ Sebelum menjalankan aplikasi, pastikan environment Anda telah terpasang:
 
 ---
 
-## 🚀 Panduan Instalasi & Menjalankan Lokal
+## Panduan Instalasi & Menjalankan Lokal
 
 ### 1. Kloning Repositori
 ```bash
@@ -160,7 +160,7 @@ MONGODB_DB="dk-sidogiri-bekasi"
 JWT_SECRET="ganti_dengan_string_acak_panjang_dan_sangat_aman_minimal_64_karakter"
 
 # Alamat Publik Situs (Untuk Kanonikal SEO & Metadata)
-NEXT_PUBLIC_SITE_URL="http://localhost:3000"
+NEXT_PUBLIC_SITE_URL="https://dksidogiribekasi.vercel.app" # Gunakan http://localhost:3000 untuk pengujian lokal
 ```
 
 ### 3. Instalasi Dependensi
@@ -187,7 +187,7 @@ npm run start
 
 ---
 
-## 🧪 Pemeriksaan Kualitas & Pengujian (Quality Assurance)
+## Pemeriksaan Kualitas & Pengujian (Quality Assurance)
 
 Proyek ini dilengkapi dengan skrip verifikasi ketat:
 
@@ -209,7 +209,7 @@ curl -s http://localhost:3000/robots.txt
 
 ---
 
-## 🎨 Panduan Identitas Visual
+## Panduan Identitas Visual
 
 - **Warna Utama (Sidogiri Emerald):** `oklch(0.38 0.14 158)` / Hex `#064e3b`
 - **Warna Aksen Kaca (Mint Jade):** `oklch(0.72 0.13 162)` / Hex `#34d399`
@@ -219,7 +219,7 @@ curl -s http://localhost:3000/robots.txt
 
 ---
 
-## 📄 Lisensi & Hak Cipta
+## Lisensi & Hak Cipta
 
 Seluruh kode sumber, aset desain visual, dan dokumentasi ini dikembangkan khusus untuk **Darul Khidmah Sidogiri Bekasi**.  
 Hak Cipta © 2026 **Darul Khidmah Sidogiri Bekasi**. Dilindungi oleh Undang-Undang.

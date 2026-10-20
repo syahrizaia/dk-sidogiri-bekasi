@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { getMediaAction } from "@/lib/actions/media";
 import {
   Search,
@@ -9,10 +10,8 @@ import {
   ImageIcon,
   Calendar,
   User,
-  Share2,
   X,
   Sparkles,
-  Check,
   Video,
   Layers,
 } from "lucide-react";
@@ -45,8 +44,6 @@ export default function PublicMediaPage() {
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<string>("Semua");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
-  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     let ignore = false;
@@ -89,40 +86,6 @@ export default function PublicMediaPage() {
     }
     return counts;
   }, [mediaList]);
-
-  // Handle Share
-  const handleShare = async (item: MediaItem) => {
-    const shareUrl = typeof window !== "undefined" ? window.location.href : "";
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `${item.title} | Darul Khidmah Sidogiri Bekasi`,
-          text: item.description,
-          url: shareUrl,
-        });
-        return;
-      } catch {
-        // Fallback to clipboard
-      }
-    }
-
-    if (navigator.clipboard) {
-      await navigator.clipboard.writeText(`${item.title} - ${shareUrl}`);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    }
-  };
-
-  // Convert youtube watch URL to embed URL if needed
-  const getEmbedUrl = (url: string) => {
-    if (url.includes("youtube.com/watch?v=")) {
-      return url.replace("watch?v=", "embed/");
-    }
-    if (url.includes("youtu.be/")) {
-      return url.replace("youtu.be/", "youtube.com/embed/");
-    }
-    return url;
-  };
 
   return (
     <div className="relative min-h-screen py-10 px-4 sm:px-6 lg:px-8 w-full max-w-7xl min-w-0 mx-auto space-y-10">
@@ -241,10 +204,10 @@ export default function PublicMediaPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredMedia.map((item) => (
-            <div
+            <Link
               key={item._id}
-              onClick={() => setSelectedItem(item)}
-              className="group rounded-3xl liquid-glass-interactive border border-white/60 dark:border-white/10 p-4 overflow-hidden flex flex-col justify-between cursor-pointer space-y-4 transition-all duration-300"
+              href={`/media/${item._id}`}
+              className="group rounded-3xl liquid-glass-interactive border border-white/60 dark:border-white/10 p-4 overflow-hidden flex flex-col justify-between space-y-4 transition-all duration-300 block"
             >
               {/* Media Thumbnail Container */}
               <div className="relative aspect-[16/10] rounded-2xl overflow-hidden bg-slate-900/10">
@@ -318,118 +281,8 @@ export default function PublicMediaPage() {
                 <span>{item.type === "video" ? "Tonton Video Liputan" : "Lihat Foto Dokumentasi"}</span>
                 <span className="group-hover:translate-x-1 transition-transform">→</span>
               </div>
-            </div>
+            </Link>
           ))}
-        </div>
-      )}
-
-      {/* Lightbox / Modal Preview */}
-      {selectedItem && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-5 bg-black/85 backdrop-blur-xl animate-in fade-in duration-300"
-          onClick={() => setSelectedItem(null)}
-        >
-          <div
-            className="relative w-full max-w-3xl sm:max-w-4xl max-h-[88dvh] sm:max-h-[min(90vh,calc(100dvh-2.5rem))] flex flex-col rounded-2xl sm:rounded-[28px] liquid-glass-elevated border border-white/40 dark:border-white/10 shadow-2xl text-foreground overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal Header (Pinned) */}
-            <div className="shrink-0 p-3 sm:p-5 pb-2.5 sm:pb-3 border-b border-white/15 dark:border-white/10 flex items-start justify-between gap-3">
-              <div className="space-y-1 min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-[10px] sm:text-xs font-bold">
-                    {selectedItem.category}
-                  </span>
-                  <span className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1">
-                    <Calendar size={12} />
-                    {selectedItem.date}
-                  </span>
-                </div>
-                <h2 className="text-sm sm:text-lg font-extrabold tracking-tight truncate leading-snug">
-                  {selectedItem.title}
-                </h2>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setSelectedItem(null)}
-                className="p-1.5 sm:p-2 rounded-full liquid-glass border border-white/40 dark:border-white/10 text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10 transition-colors shrink-0 cursor-pointer"
-                title="Tutup Preview"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            {/* Scrollable Content Body (Fits Screen Height) */}
-            <div className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-5 space-y-3">
-              {/* Media Player / Image Display */}
-              <div className="relative w-full rounded-xl sm:rounded-2xl overflow-hidden bg-black/50 shadow-inner flex items-center justify-center max-h-[25vh] sm:max-h-[44vh]">
-                {selectedItem.type === "video" ? (
-                  <div className="aspect-video w-full max-h-[25vh] sm:max-h-[44vh]">
-                    <iframe
-                      src={getEmbedUrl(selectedItem.url)}
-                      title={selectedItem.title}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      className="w-full h-full border-0"
-                    />
-                  </div>
-                ) : (
-                  <div className="relative aspect-[16/10] sm:aspect-[16/9] w-full max-h-[25vh] sm:max-h-[44vh]">
-                    <Image
-                      src={selectedItem.url}
-                      alt={selectedItem.title}
-                      fill
-                      sizes="(max-width: 1200px) 100vw, 1200px"
-                      className="object-contain"
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Media Caption & Actions */}
-              <div className="space-y-2.5 pt-2 border-t border-white/15 dark:border-white/10">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-                  <div className="text-xs text-muted-foreground flex items-center gap-1.5 min-w-0">
-                    <User size={13} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
-                    <span className="truncate">Oleh: <strong>{selectedItem.author}</strong></span>
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => handleShare(selectedItem)}
-                      className="px-3 py-1.5 rounded-full liquid-glass border border-white/40 dark:border-white/10 text-xs font-semibold flex items-center gap-1.5 hover:bg-white/10 transition-colors cursor-pointer"
-                    >
-                      {copied ? (
-                        <>
-                          <Check size={13} className="text-emerald-500" />
-                          <span className="text-emerald-600 dark:text-emerald-400">Tersalin!</span>
-                        </>
-                      ) : (
-                        <>
-                          <Share2 size={13} />
-                          <span>Bagikan</span>
-                        </>
-                      )}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setSelectedItem(null)}
-                      className="px-4 py-1.5 rounded-full bg-emerald-700 text-white text-xs font-semibold hover:bg-emerald-800 transition-colors cursor-pointer shadow-md"
-                    >
-                      Tutup
-                    </button>
-                  </div>
-                </div>
-
-                <p className="text-xs text-foreground/90 leading-relaxed bg-black/5 dark:bg-white/5 p-3 rounded-xl border border-white/10">
-                  {selectedItem.description}
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
       )}
     </div>

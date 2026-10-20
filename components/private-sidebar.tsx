@@ -30,6 +30,8 @@ import {
   BookOpen,
   Building2,
   Compass,
+  WalletCards,
+  UserPlus,
 } from "lucide-react";
 
 const emptySubscribe = () => () => {};
@@ -173,13 +175,15 @@ export function PrivateSidebar() {
         groupName: "Akademik & Santri",
         items: [
           { href: "/students", label: "Buku Induk Santri", icon: Users, moduleKey: "students" },
+          { href: "/modules/admissions", label: "Pendaftaran Santri", icon: UserPlus, moduleKey: "admissions" },
           { href: "/teachers", label: "Dewan Asatidz", icon: UserCheck, moduleKey: "teachers" },
           { href: "/parents", label: "Wali Santri", icon: HeartHandshake, moduleKey: "parents" },
         ],
       },
       {
-        groupName: "Fasilitas & Syiar",
+        groupName: "Fasilitas & Layanan",
         items: [
+          { href: "/modules/finance", label: "Keuangan & Tagihan", icon: WalletCards, moduleKey: "finance" },
           { href: "/modules/dormitory", label: "Manajemen Asrama", icon: BedDouble, moduleKey: "dormitory" },
           { href: "/modules/media", label: "Pusat Media", icon: ImageIcon, moduleKey: "media" },
         ],
@@ -210,13 +214,17 @@ export function PrivateSidebar() {
         .filter((group) => group.items.length > 0);
     }
 
-    // Fallback awal sebelum permissions termuat: sembunyikan users untuk non-super_admin
+    // Fallback awal sebelum permissions termuat: sembunyikan users, finance, dan admissions untuk non-authorized
     const isSuper = role === "super_admin" || role === "admin";
+    const canFinance = role === "super_admin" || role === "ketua_ranting" || role === "staf_administrasi";
+    const canAdmissions = role === "super_admin" || role === "ketua_ranting" || role === "staf_administrasi";
     return allGroups
       .map((group) => ({
         ...group,
         items: group.items.filter((item) => {
           if (item.moduleKey === "users" && !isSuper) return false;
+          if (item.moduleKey === "finance" && !canFinance) return false;
+          if (item.moduleKey === "admissions" && !canAdmissions) return false;
           return true;
         }),
       }))

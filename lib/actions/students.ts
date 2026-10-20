@@ -58,7 +58,7 @@ export async function getStudentsAction(params?: {
     const status = params?.status || "Semua";
 
     const db = await getDatabase();
-    const collection = db.collection<SantriRecord>("santri");
+    const collection = db.collection<SantriRecord>("students");
     const parentsCollection = db.collection("parents");
 
     const count = await collection.countDocuments();
@@ -145,7 +145,7 @@ export async function createStudentAction(payload: SantriRecord) {
     }
 
     const db = await getDatabase();
-    const collection = db.collection<SantriRecord>("santri");
+    const collection = db.collection<SantriRecord>("students");
     const parentsCollection = db.collection("parents");
 
     const newRecord: SantriRecord = {
@@ -214,7 +214,7 @@ export async function updateStudentAction(id: string, payload: Partial<SantriRec
     }
 
     const db = await getDatabase();
-    const collection = db.collection<SantriRecord>("santri");
+    const collection = db.collection<SantriRecord>("students");
     const parentsCollection = db.collection("parents");
 
     let query: Record<string, unknown> = { id };

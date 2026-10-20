@@ -95,6 +95,8 @@ export async function getRolesAction(): Promise<{ success: boolean; data?: RoleP
           mi: perms.mi ?? true,
           mts: perms.mts ?? true,
           tpq: perms.tpq ?? true,
+          finance: perms.finance ?? (r.id === "super_admin" || r.id === "ketua_ranting" || r.id === "staf_administrasi"),
+          admissions: perms.admissions ?? (r.id === "super_admin" || r.id === "ketua_ranting" || r.id === "staf_administrasi"),
         },
         crudPermissions: crud,
         updatedAt: r.updatedAt,
@@ -146,6 +148,8 @@ export async function getUserPermissionsAction(): Promise<{
       mi: rawPermissions.mi ?? true,
       mts: rawPermissions.mts ?? true,
       tpq: rawPermissions.tpq ?? true,
+      finance: rawPermissions.finance ?? (normRole === "super_admin" || normRole === "ketua_ranting" || normRole === "staf_administrasi"),
+      admissions: rawPermissions.admissions ?? (normRole === "super_admin" || normRole === "ketua_ranting" || normRole === "staf_administrasi"),
     };
 
     const crudPermissions = buildFallbackCrud(normRole, permissions, rawCrud) as Record<
@@ -299,6 +303,7 @@ export async function updateRolePermissionsAction(
     revalidatePath("/modules/mi", "page");
     revalidatePath("/modules/mts", "page");
     revalidatePath("/modules/tpq", "page");
+    revalidatePath("/modules/finance", "page");
 
     return { success: true, message: "Hak akses peran dan wewenang CRUD berhasil diperbarui seketika." };
   } catch (error) {

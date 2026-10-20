@@ -28,7 +28,8 @@ import {
   ChevronRight,
   User,
   BedDouble,
-  Video
+  Video,
+  WalletCards,
 } from "lucide-react";
 import { ParentPortalView } from "./components/ParentPortalView";
 import { TeacherPortalView } from "./components/TeacherPortalView";
@@ -139,7 +140,7 @@ const MODULES_LIST: ModuleItem[] = [
     subtitle: "New Admissions Portal (PPDB)",
     description: "Portal pendaftaran online murid baru MI dan TPQ, verifikasi berkas formulir, jadwal wawancara, serta penempatan kelas.",
     category: "academic",
-    href: "/santri-baru",
+    href: "/modules/admissions",
     icon: UserPlus,
     badge: { text: "PPDB Online", variant: "rose" },
   },
@@ -162,6 +163,16 @@ const MODULES_LIST: ModuleItem[] = [
     href: "/modules/media",
     icon: Video,
     badge: { text: "Galeri & Syiar", variant: "teal" },
+  },
+  {
+    id: "finance",
+    title: "Keuangan & Tagihan Santri",
+    subtitle: "Finance, Billing & SPP System",
+    description: "Pusat transaksi kas masuk dan keluar, pencatatan iuran syahriyah (SPP), pembayaran asrama, serta cetak bukti kwitansi resmi.",
+    category: "system",
+    href: "/modules/finance",
+    icon: WalletCards,
+    badge: { text: "Kas & Tagihan", variant: "emerald" },
   },
   {
     id: "users-management",
@@ -275,6 +286,8 @@ export default function ModulesPage() {
       case "data-science": return "data_science";
       case "dormitory": return "dormitory";
       case "media-management": return "media";
+      case "finance": return "finance";
+      case "admissions": return "admissions";
       case "users-management": return "users";
       case "settings": return "settings";
       default: return null;
@@ -300,6 +313,11 @@ export default function ModulesPage() {
           // Fallback awal sebelum database permissions termuat
           if (modKey === "users" && !isSuperAdmin) {
             return false;
+          }
+          if (modKey === "finance" || modKey === "admissions") {
+            const role = effectiveRole;
+            const allowed = role === "super_admin" || role === "ketua_ranting" || role === "staf_administrasi";
+            if (!allowed) return false;
           }
         }
       }
@@ -503,11 +521,13 @@ export default function ModulesPage() {
             </div>
 
             <div>
-              <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 font-serif tracking-wide">
-                بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+              <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 font-serif tracking-wide flex items-center gap-2">
+                <span>بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</span>
+                <span className="opacity-40">•</span>
+                <span className="text-emerald-800 dark:text-emerald-300 font-bold">أَهْلاً وَسَهْلاً</span>
               </p>
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                <span>{loadingUser ? "Memuat Sesi..." : user?.name || "Ahlan wa Sahlan"}</span>
+                <span>{loadingUser ? "Memuat Sesi..." : user?.name || "أَهْلاً وَسَهْلاً"}</span>
                 <span className="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
                   <ShieldCheck size={11} />
                   {getRoleLabel(user?.role)}
@@ -796,7 +816,7 @@ export default function ModulesPage() {
           </div>
 
           <Link
-            href="/instansi"
+            href="/institutions"
             className="flex-shrink-0 inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-emerald-700 to-teal-600 text-white text-xs font-semibold shadow-md hover:shadow-lg transition-all active:scale-95"
           >
             <span>Selayang Pandang Instansi</span>

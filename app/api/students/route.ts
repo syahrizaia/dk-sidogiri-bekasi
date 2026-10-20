@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
 
     try {
       const db = await getDatabase();
-      const collection = db.collection("santri");
+      const collection = db.collection("students");
       const result = await collection.insertOne(newSantri);
       newSantri.id = String(result.insertedId);
     } catch (dbErr) {

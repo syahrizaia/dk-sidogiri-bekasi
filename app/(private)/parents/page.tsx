@@ -20,8 +20,10 @@ import {
   ShieldCheck,
   MessageCircle,
   Pencil,
-  ArrowRight
+  ArrowRight,
+  Download
 } from "lucide-react";
+import { exportCorporateCSV } from "@/lib/export-utils";
 
 interface Parent {
   id: string;
@@ -225,6 +227,33 @@ export default function ParentsPage() {
     };
   }, [parents]);
 
+  const handleExportParentsCSV = () => {
+    if (!filteredParents.length) return;
+    exportCorporateCSV({
+      filename: "Data_Wali_Santri_DK_Sidogiri",
+      title: "Pangkalan Data Relasi Orang Tua & Wali Santri",
+      subtitle: "Direktori Komunikasi Keluarga Santri Madrasah Miftahul Ulum & TPQ Tartil Sidogiri",
+      metadata: {
+        "Unit Lembaga": selectedInst === "ALL" ? "Seluruh Lembaga (MI, MTs, TPQ)" : selectedInst,
+        "Hubungan Keluarga": selectedRelation === "ALL" ? "Semua Relasi (Ayah, Ibu, Wali)" : selectedRelation,
+        "Kata Kunci Pencarian": searchQuery || "Semua Data",
+      },
+      columns: [
+        { header: "No", accessor: (_, idx) => idx + 1 },
+        { header: "Nama Lengkap Wali", accessor: "name" },
+        { header: "Hubungan Keluarga", accessor: "relation" },
+        { header: "No. WhatsApp / Telepon", accessor: "phone", isNumericId: true },
+        { header: "Alamat Domisili", accessor: "address" },
+        { header: "Nama Santri Terkait", accessor: "studentName" },
+        { header: "NIS Santri", accessor: "studentNis", isNumericId: true },
+        { header: "Unit Pendidikan Santri", accessor: "studentInstitution" },
+        { header: "Kelas Santri", accessor: (p) => p.studentDetails?.kelas || "-" },
+        { header: "Status Mukim Santri", accessor: (p) => p.studentDetails?.status === "MUKIM" ? `Mukim (${p.studentDetails.kamar || "Asrama"})` : "Non-Mukim" },
+      ],
+      data: filteredParents,
+    });
+  };
+
   return (
     <div className="relative min-h-screen py-8 sm:py-10 px-3.5 sm:px-6 lg:px-8 w-full max-w-7xl min-w-0 mx-auto">
       {/* Breadcrumb & Navigation Back */}
@@ -249,26 +278,38 @@ export default function ParentsPage() {
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full liquid-glass-pill text-xs font-semibold text-emerald-700 dark:text-emerald-300 mb-2">
               <HeartHandshake size={14} />
-              <span>Sinergi Wali Santri & Pesantren</span>
+              <span>Sinergi Wali Santri &amp; Pesantren</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-              Data Orang Tua & Wali Santri
+              Data Orang Tua &amp; Wali Santri
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1 max-w-2xl leading-relaxed">
               Pusat koordinasi komunikasi keluarga santri, nomor darurat WhatsApp wali, pemetaan domisili, dan relasi santri terdaftar di MI, persiapan MTs, dan TPQ Sidogiri.
             </p>
           </div>
 
-          {canCreate && (
+          <div className="flex flex-wrap items-center gap-2 self-start md:self-center">
             <button
               type="button"
-              onClick={() => setIsModalOpen(true)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-emerald-700 to-teal-600 hover:from-emerald-600 hover:to-teal-500 text-white text-xs font-bold shadow-lg shadow-emerald-900/20 transition-all hover:scale-[1.02] active:scale-95 cursor-pointer self-start md:self-center"
+              onClick={handleExportParentsCSV}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full liquid-glass-pill text-xs font-semibold text-foreground hover:bg-white/40 dark:hover:bg-white/10 transition-all cursor-pointer active:scale-95"
+              title="Unduh data wali santri dalam format CSV resmi"
             >
-              <Plus size={15} />
-              <span>Tambah Data Wali Santri</span>
+              <Download size={14} />
+              <span>Unduh Laporan (CSV)</span>
             </button>
-          )}
+
+            {canCreate && (
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(true)}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-emerald-700 to-teal-600 hover:from-emerald-600 hover:to-teal-500 text-white text-xs font-bold shadow-lg shadow-emerald-900/20 transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
+              >
+                <Plus size={15} />
+                <span>Tambah Data Wali Santri</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* KPI Counter Cards */}
@@ -432,8 +473,9 @@ export default function ParentsPage() {
                               {p.studentDetails.kelas} • {p.studentDetails.status === "MUKIM" ? `Mukim (${p.studentDetails.kamar})` : "Non-Mukim"}
                             </span>
                           ) : (
-                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 block mt-0.5 font-medium">
-                              ✓ Terdaftar di Sidogiri Bekasi
+                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1 mt-0.5">
+                              <CheckCircle2 size={11} />
+                              <span>Terdaftar di Sidogiri Bekasi</span>
                             </span>
                           )}
                         </Link>

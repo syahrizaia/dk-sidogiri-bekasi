@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     let mongoInsertedId: string | null = null;
     try {
       const db = await getDatabase();
-      const collection = db.collection("pendaftaran");
+      const collection = db.collection("admissions");
       const insertResult = await collection.insertOne(record);
       mongoInsertedId = String(insertResult.insertedId);
     } catch (dbErr) {

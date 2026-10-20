@@ -24,7 +24,8 @@ import {
   Eye,
   ChevronRight,
   ShieldCheck,
-  FileText
+  FileText,
+  ClipboardList
 } from "lucide-react";
 import { getStudentsAction, SantriRecord } from "@/lib/actions/students";
 import { getTeachersAction, TeacherRecord } from "@/lib/actions/teachers";
@@ -132,8 +133,11 @@ export function StaffPortalView({ user, currentTime, onLogout, loggingOut }: Sta
               <Layers size={14} />
               <span>Portal Operasional Tata Usaha &amp; Administrasi</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-              Ahlan wa Sahlan, {user.name}
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground flex flex-wrap items-baseline gap-2.5">
+              <span className="font-serif font-bold text-amber-800 dark:text-amber-300 text-3xl sm:text-4xl leading-none">
+                أَهْلاً وَسَهْلاً،
+              </span>
+              <span>{user.name}</span>
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl leading-relaxed">
               Pusat pelayanan tata usaha pesantren: kelola buku induk santri, data wali santri, penugasan kamar asrama, dan administrasi unit pendidikan (MI, MTs, TPQ) Sidogiri Bekasi.
@@ -341,7 +345,10 @@ export function StaffPortalView({ user, currentTime, onLogout, loggingOut }: Sta
               : "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
           }`}
         >
-          📋 Santri Terbaru
+          <span className="inline-flex items-center justify-center gap-1.5">
+            <ClipboardList size={14} />
+            <span>Santri Terbaru</span>
+          </span>
         </button>
         <button
           type="button"
@@ -352,7 +359,10 @@ export function StaffPortalView({ user, currentTime, onLogout, loggingOut }: Sta
               : "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
           }`}
         >
-          🛏️ Status Asrama
+          <span className="inline-flex items-center justify-center gap-1.5">
+            <BedDouble size={14} />
+            <span>Status Asrama</span>
+          </span>
         </button>
         <button
           type="button"
@@ -363,7 +373,10 @@ export function StaffPortalView({ user, currentTime, onLogout, loggingOut }: Sta
               : "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
           }`}
         >
-          👨‍👩‍👦 Data Wali Santri
+          <span className="inline-flex items-center justify-center gap-1.5">
+            <Users size={14} />
+            <span>Data Wali Santri</span>
+          </span>
         </button>
         <button
           type="button"
@@ -374,7 +387,10 @@ export function StaffPortalView({ user, currentTime, onLogout, loggingOut }: Sta
               : "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
           }`}
         >
-          🏫 Manajemen Unit
+          <span className="inline-flex items-center justify-center gap-1.5">
+            <Building2 size={14} />
+            <span>Manajemen Unit</span>
+          </span>
         </button>
       </div>
 

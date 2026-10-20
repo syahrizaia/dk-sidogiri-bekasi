@@ -6,9 +6,9 @@ import {
   ArrowLeft, 
   BookOpen, 
   Clock, 
-  UserPlus, 
-  Download
+  UserPlus
 } from "lucide-react";
+import { PrintButton } from "@/components/print-button";
 
 interface InstansiDetail {
   slug: string;
@@ -102,12 +102,12 @@ export async function generateMetadata({
     title: data.nama,
     description: data.sejarah.slice(0, 160),
     alternates: {
-      canonical: `/instansi/${data.slug}`,
+      canonical: `/institutions/${data.slug}`,
     },
     openGraph: {
       title: `${data.nama} | Darul Khidmah Sidogiri Bekasi`,
       description: data.sejarah.slice(0, 160),
-      url: `/instansi/${data.slug}`,
+      url: `/institutions/${data.slug}`,
       images: [
         {
           url: "/logo-sidogiri.jpeg",
@@ -126,7 +126,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function InstansiDetailPage({
+export default async function InstitutionDetailPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
@@ -145,7 +145,7 @@ export default async function InstansiDetailPage({
         {/* Navigation Breadcrumb */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link 
-            href="/instansi" 
+            href="/institutions" 
             className="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full liquid-glass-pill text-muted-foreground hover:text-foreground transition-all duration-300"
           >
             <ArrowLeft size={14} />
@@ -201,13 +201,7 @@ export default async function InstansiDetailPage({
                 Materi wajib per tingkatan kelas berdasarkan panduan Majlis Tarbiyah Sidogiri
               </p>
             </div>
-            <button 
-              type="button"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full liquid-glass-pill text-xs font-semibold text-foreground hover:bg-white/40"
-            >
-              <Download size={13} />
-              <span>Silabus Lengkap (PDF)</span>
-            </button>
+            <PrintButton label="Silabus Lengkap (PDF)" />
           </div>
 
           <div className="space-y-4">
@@ -272,7 +266,7 @@ export default async function InstansiDetailPage({
           </p>
           <div className="pt-2">
             <Link 
-              href="/santri-baru"
+              href="/admissions"
               className="liquid-sheen inline-flex items-center gap-2 bg-gradient-to-r from-emerald-700 to-teal-600 text-white px-6 py-2.5 rounded-full text-xs font-semibold shadow-md hover:shadow-lg transition-all"
             >
               <UserPlus size={14} />

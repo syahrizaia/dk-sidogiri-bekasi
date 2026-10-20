@@ -296,7 +296,7 @@ export default function AboutPage() {
 
               <div className="pt-4 mt-6 border-t border-border/40">
                 <Link
-                  href="/instansi/mi"
+                  href="/institutions/mi"
                   className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 hover:underline"
                 >
                   <span>Selengkapnya tentang MI</span>
@@ -325,7 +325,7 @@ export default function AboutPage() {
 
               <div className="pt-4 mt-6 border-t border-border/40">
                 <Link
-                  href="/instansi/mts"
+                  href="/institutions/mts"
                   className="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-700 dark:text-teal-300 hover:underline"
                 >
                   <span>Progres Persiapan MTs</span>
@@ -354,7 +354,7 @@ export default function AboutPage() {
 
               <div className="pt-4 mt-6 border-t border-border/40">
                 <Link
-                  href="/instansi/tpq"
+                  href="/institutions/tpq"
                   className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-700 dark:text-amber-300 hover:underline"
                 >
                   <span>Detail Metode TPQ</span>
@@ -367,7 +367,7 @@ export default function AboutPage() {
       </section>
 
       {/* Informasi Lokasi & Kontak Hubungi Kami */}
-      <section className="rounded-3xl liquid-glass-card p-8 sm:p-10 border border-white/60 dark:border-white/10 shadow-xl">
+      <section id="kontak" className="scroll-mt-24 sm:scroll-mt-28 rounded-3xl liquid-glass-card p-8 sm:p-10 border border-white/60 dark:border-white/10 shadow-xl">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
           <div className="space-y-4">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full liquid-glass-pill text-xs font-semibold text-emerald-700 dark:text-emerald-300">
@@ -399,7 +399,7 @@ export default function AboutPage() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-end">
             <Link
-              href="/santri-baru"
+              href="/admissions"
               className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-gradient-to-r from-emerald-700 to-teal-600 hover:from-emerald-600 hover:to-teal-500 text-white text-xs font-bold shadow-lg shadow-emerald-900/20 transition-all hover:scale-[1.02] active:scale-95"
             >
               <span>Daftar Santri Baru (PSB)</span>

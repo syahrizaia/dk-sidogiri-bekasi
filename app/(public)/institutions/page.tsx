@@ -203,7 +203,7 @@ export default function InstansiOverview() {
 
                   <div className="pt-3 border-t border-border/40 space-y-2">
                     <Link 
-                      href={`/instansi/${item.slug}`}
+                      href={`/institutions/${item.slug}`}
                       className="liquid-sheen w-full flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-700 to-teal-600 text-white px-4 py-2.5 rounded-full text-xs font-semibold shadow-md hover:shadow-lg transition-all"
                     >
                       <span>Detail Kurikulum</span>

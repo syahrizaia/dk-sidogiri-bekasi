@@ -17,7 +17,7 @@ const amiri = Amiri({
   display: "swap",
 });
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://sidogiri-bekasi.sch.id";
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://dksidogiribekasi.vercel.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
@@ -178,12 +178,11 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdData) }}
         />
       </head>
-      <body className="min-h-screen flex flex-col relative selection:bg-emerald-500/20 selection:text-emerald-900 dark:selection:text-emerald-200">
+      <body className="min-h-screen flex flex-col relative selection:bg-emerald-500/20 selection:text-emerald-900 dark:selection:text-emerald-200 transition-colors duration-500 ease-in-out">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
-          disableTransitionOnChange
         >
           {/* Ambient Liquid Orbs & Islamic Pattern Watermark Layer */}
           <div className="ambient-scene" aria-hidden="true">

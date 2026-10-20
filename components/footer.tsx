@@ -43,27 +43,33 @@ export function Footer() {
 
             {/* Sosmed dengan Efek Refleksi Kaca */}
             <div className="flex items-center gap-2 pt-1">
-              <Link 
-                href="#" 
+              <a 
+                href="https://instagram.com" 
+                target="_blank"
+                rel="noopener noreferrer"
                 aria-label="Instagram Sidogiri"
                 className="p-2.5 rounded-full liquid-glass-pill text-muted-foreground hover:text-emerald-700 dark:hover:text-emerald-300 hover:scale-110 transition-all duration-300"
               >
                 <FaInstagram size={14} />
-              </Link>
-              <Link 
-                href="#" 
+              </a>
+              <a 
+                href="https://youtube.com" 
+                target="_blank"
+                rel="noopener noreferrer"
                 aria-label="YouTube Sidogiri"
                 className="p-2.5 rounded-full liquid-glass-pill text-muted-foreground hover:text-red-600 dark:hover:text-red-400 hover:scale-110 transition-all duration-300"
               >
                 <FaYoutube size={14} />
-              </Link>
-              <Link 
-                href="#" 
+              </a>
+              <a 
+                href="https://facebook.com" 
+                target="_blank"
+                rel="noopener noreferrer"
                 aria-label="Facebook Sidogiri"
                 className="p-2.5 rounded-full liquid-glass-pill text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 hover:scale-110 transition-all duration-300"
               >
                 <FaFacebook size={14} />
-              </Link>
+              </a>
             </div>
           </div>
 
@@ -85,22 +91,22 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/instansi/mi" className="text-muted-foreground hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
+                <Link href="/institutions/mi" className="text-muted-foreground hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
                   Madrasah Ibtidaiyah (MI) - Beroperasi
                 </Link>
               </li>
               <li>
-                <Link href="/instansi/mts" className="text-muted-foreground hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
+                <Link href="/institutions/mts" className="text-muted-foreground hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
                   Madrasah Tsanawiyah (MTs) - Tahun Depan
                 </Link>
               </li>
               <li>
-                <Link href="/instansi/tpq" className="text-muted-foreground hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
+                <Link href="/institutions/tpq" className="text-muted-foreground hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
                   Taman Pendidikan Al-Qur&apos;an (TPQ)
                 </Link>
               </li>
               <li>
-                <Link href="/santri-baru" className="text-muted-foreground hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
+                <Link href="/admissions" className="text-muted-foreground hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
                   Pendaftaran Santri Baru
                 </Link>
               </li>
@@ -146,7 +152,7 @@ export function Footer() {
             <div className="p-4 rounded-2xl liquid-glass-pill border border-border/50 space-y-2">
               <div className="flex items-center gap-2 text-xs text-foreground font-semibold">
                 <ShieldCheck size={16} className="text-emerald-600 dark:text-emerald-400" />
-                <span>MongoDB & Supabase Secured</span>
+                <span>MongoDB Atlas Secured</span>
               </div>
               <p className="text-[11px] text-muted-foreground leading-relaxed">
                 Terkoneksi aman dengan klaster database MongoDB Atlas & enkripsi terdistribusi untuk menjaga integritas dan kerahasiaan data santri.
@@ -162,15 +168,15 @@ export function Footer() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-muted-foreground text-center sm:text-left">
           <p>© 2026 Darul Khidmah Sidogiri Bekasi. Khidmah Lil-Ma&apos;had Wal-Ummah.</p>
           <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3 sm:gap-5">
-            <Link href="#" className="hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
+            <Link href="/about#kontak" className="hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
               Kebijakan Privasi
             </Link>
             <span className="opacity-30">•</span>
-            <Link href="#" className="hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
+            <Link href="/about#kontak" className="hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
               Ketentuan Layanan
             </Link>
             <span className="opacity-30">•</span>
-            <Link href="#" className="hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
+            <Link href="/about#kontak" className="hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
               Bantuan Khidmah
             </Link>
           </div>

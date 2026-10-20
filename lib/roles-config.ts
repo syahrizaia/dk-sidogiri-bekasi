@@ -17,7 +17,9 @@ export type ModulePermissionKey =
   | "settings"
   | "mi"
   | "mts"
-  | "tpq";
+  | "tpq"
+  | "finance"
+  | "admissions";
 
 export type SystemRole =
   | "super_admin"
@@ -56,6 +58,8 @@ export interface RolePermission {
     mi?: boolean;
     mts?: boolean;
     tpq?: boolean;
+    finance?: boolean;
+    admissions?: boolean;
   };
   crudPermissions: Record<string, CrudActionPermissions>;
   updatedAt?: string;
@@ -74,6 +78,8 @@ export const MODULE_KEYS: ModulePermissionKey[] = [
   "mi",
   "mts",
   "tpq",
+  "finance",
+  "admissions",
 ];
 
 export const fullCrud = (): CrudActionPermissions => ({
@@ -141,6 +147,8 @@ export const DEFAULT_ROLE_PERMISSIONS: RolePermission[] = [
       mi: true,
       mts: true,
       tpq: true,
+      finance: true,
+      admissions: true,
     },
     crudPermissions: {
       modules: fullCrud(),
@@ -155,6 +163,8 @@ export const DEFAULT_ROLE_PERMISSIONS: RolePermission[] = [
       mi: fullCrud(),
       mts: fullCrud(),
       tpq: fullCrud(),
+      finance: fullCrud(),
+      admissions: fullCrud(),
     },
     updatedAt: new Date().toISOString(),
   },
@@ -177,6 +187,8 @@ export const DEFAULT_ROLE_PERMISSIONS: RolePermission[] = [
       mi: true,
       mts: true,
       tpq: true,
+      finance: true,
+      admissions: true,
     },
     crudPermissions: {
       modules: readOnly(),
@@ -191,6 +203,8 @@ export const DEFAULT_ROLE_PERMISSIONS: RolePermission[] = [
       mi: readEdit(),
       mts: readEdit(),
       tpq: readEdit(),
+      finance: readEdit(),
+      admissions: readEdit(),
     },
     updatedAt: new Date().toISOString(),
   },
@@ -213,6 +227,8 @@ export const DEFAULT_ROLE_PERMISSIONS: RolePermission[] = [
       mi: true,
       mts: true,
       tpq: true,
+      finance: true,
+      admissions: true,
     },
     crudPermissions: {
       modules: readOnly(),
@@ -227,6 +243,8 @@ export const DEFAULT_ROLE_PERMISSIONS: RolePermission[] = [
       mi: readWrite(),
       mts: readWrite(),
       tpq: readWrite(),
+      finance: readWrite(),
+      admissions: readWrite(),
     },
     updatedAt: new Date().toISOString(),
   },
@@ -249,6 +267,8 @@ export const DEFAULT_ROLE_PERMISSIONS: RolePermission[] = [
       mi: true,
       mts: true,
       tpq: true,
+      finance: false,
+      admissions: false,
     },
     crudPermissions: {
       modules: readOnly(),
@@ -263,6 +283,8 @@ export const DEFAULT_ROLE_PERMISSIONS: RolePermission[] = [
       mi: readEdit(),
       mts: readEdit(),
       tpq: readEdit(),
+      finance: noAccess(),
+      admissions: noAccess(),
     },
     updatedAt: new Date().toISOString(),
   },
@@ -285,6 +307,8 @@ export const DEFAULT_ROLE_PERMISSIONS: RolePermission[] = [
       mi: true,
       mts: true,
       tpq: true,
+      finance: false,
+      admissions: false,
     },
     crudPermissions: {
       modules: readOnly(),
@@ -299,6 +323,8 @@ export const DEFAULT_ROLE_PERMISSIONS: RolePermission[] = [
       mi: readOnly(),
       mts: readOnly(),
       tpq: readOnly(),
+      finance: noAccess(),
+      admissions: noAccess(),
     },
     updatedAt: new Date().toISOString(),
   },
@@ -341,7 +367,9 @@ export function buildFallbackCrud(
         key === "students" ||
         key === "mi" ||
         key === "mts" ||
-        key === "tpq"
+        key === "tpq" ||
+        key === "finance" ||
+        key === "admissions"
           ? readWrite()
           : readOnly();
     } else if (norm === "dewan_asatidz") {

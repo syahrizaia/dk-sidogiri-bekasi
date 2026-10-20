@@ -16,15 +16,15 @@ export async function GET() {
       dormitories,
       konsulatAgg
     ] = await Promise.all([
-      db.collection("santri").countDocuments(),
-      db.collection("santri").countDocuments({ status: "MUKIM" }),
-      db.collection("santri").countDocuments({ status: "NON-MUKIM" }),
+      db.collection("students").countDocuments(),
+      db.collection("students").countDocuments({ status: "MUKIM" }),
+      db.collection("students").countDocuments({ status: "NON-MUKIM" }),
       db.collection("teachers").countDocuments(),
-      db.collection("santri").countDocuments({ jenjang: "MI" }),
-      db.collection("santri").countDocuments({ jenjang: "MTs" }),
-      db.collection("santri").countDocuments({ jenjang: "TPQ" }),
+      db.collection("students").countDocuments({ jenjang: "MI" }),
+      db.collection("students").countDocuments({ jenjang: "MTs" }),
+      db.collection("students").countDocuments({ jenjang: "TPQ" }),
       db.collection("dormitories").find({}).toArray(),
-      db.collection("santri").aggregate([
+      db.collection("students").aggregate([
         { $group: { _id: "$konsulat", count: { $sum: 1 } } },
         { $sort: { count: -1 } },
         { $limit: 6 }
