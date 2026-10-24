@@ -123,7 +123,7 @@ export async function getUnitStudentsAction(slug: string): Promise<{
     if (cleanSlug === "tpq") jenjangMatch = "TPQ";
 
     const db = await getDatabase();
-    const collection = db.collection<SantriRecord>("santri");
+    const collection = db.collection<SantriRecord>("students");
     const students = await collection
       .find({ jenjang: jenjangMatch })
       .sort({ nis: 1 })
@@ -159,13 +159,38 @@ export async function getUnitTeachersAction(slug: string): Promise<{
     const db = await getDatabase();
     const collection = db.collection<TeacherRecord>("teachers");
     const teachers = await collection
-      .find({ institution: institutionMatch })
+      .find({
+        $or: [
+          { institution: institutionMatch },
+          { institutions: institutionMatch },
+          { "teachingAssignments.unit": institutionMatch },
+          { "homeroomAssignments.unit": institutionMatch },
+        ],
+      })
       .sort({ nip: 1 })
       .toArray();
 
+    const formatted: TeacherRecord[] = teachers.map((t) => ({
+      id: t._id ? t._id.toString() : t.id,
+      _id: t._id ? t._id.toString() : t.id,
+      nip: t.nip,
+      name: t.name,
+      role: t.role,
+      institution: t.institution,
+      institutions: Array.isArray(t.institutions) && t.institutions.length > 0 ? t.institutions : [t.institution || "MI"],
+      teachingAssignments: Array.isArray(t.teachingAssignments) ? t.teachingAssignments : [],
+      homeroomAssignments: Array.isArray(t.homeroomAssignments) ? t.homeroomAssignments : [],
+      specialization: t.specialization,
+      phone: t.phone,
+      status: t.status,
+      joinedYear: t.joinedYear,
+      createdAt: t.createdAt ? String(t.createdAt) : undefined,
+      updatedAt: t.updatedAt ? String(t.updatedAt) : undefined,
+    }));
+
     return {
       success: true,
-      data: serializeData(teachers),
+      data: serializeData(formatted),
     };
   } catch (error) {
     console.error(`Error fetching teachers for unit ${slug}:`, error);

@@ -18,7 +18,12 @@ import {
   Compass,
   LogIn,
   Image as ImageIcon,
-  PhoneCall
+  ScrollText,
+  Award,
+  Users,
+  GraduationCap,
+  MapPin,
+  Sparkles
 } from "lucide-react";
 
 const emptySubscribe = () => () => {};
@@ -26,25 +31,47 @@ const emptySubscribe = () => () => {};
 export function PublicNavbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isInstansiOpen, setIsInstansiOpen] = useState(false);
-  const closeTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [mobileAboutExpanded, setMobileAboutExpanded] = useState(true);
+  const closeInstansiTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const closeAboutTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
   const { theme, setTheme, resolvedTheme } = useTheme();
   const pathname = usePathname();
 
-  const handleMouseEnter = () => {
-    if (closeTimeoutRef.current) {
-      clearTimeout(closeTimeoutRef.current);
-      closeTimeoutRef.current = null;
+  const handleInstansiEnter = () => {
+    if (closeInstansiTimeoutRef.current) {
+      clearTimeout(closeInstansiTimeoutRef.current);
+      closeInstansiTimeoutRef.current = null;
     }
+    setIsAboutOpen(false);
     setIsInstansiOpen(true);
   };
 
-  const handleMouseLeave = () => {
-    if (closeTimeoutRef.current) {
-      clearTimeout(closeTimeoutRef.current);
+  const handleInstansiLeave = () => {
+    if (closeInstansiTimeoutRef.current) {
+      clearTimeout(closeInstansiTimeoutRef.current);
     }
-    closeTimeoutRef.current = setTimeout(() => {
+    closeInstansiTimeoutRef.current = setTimeout(() => {
       setIsInstansiOpen(false);
+    }, 220);
+  };
+
+  const handleAboutEnter = () => {
+    if (closeAboutTimeoutRef.current) {
+      clearTimeout(closeAboutTimeoutRef.current);
+      closeAboutTimeoutRef.current = null;
+    }
+    setIsInstansiOpen(false);
+    setIsAboutOpen(true);
+  };
+
+  const handleAboutLeave = () => {
+    if (closeAboutTimeoutRef.current) {
+      clearTimeout(closeAboutTimeoutRef.current);
+    }
+    closeAboutTimeoutRef.current = setTimeout(() => {
+      setIsAboutOpen(false);
     }, 220);
   };
 
@@ -111,22 +138,128 @@ export function PublicNavbar() {
             Beranda
           </Link>
 
-          <Link 
-            href="/about" 
-            className={`text-xs font-medium px-4 py-1.5 rounded-full transition-all duration-200 ${
-              isCurrent("/about") 
-                ? "bg-white/60 dark:bg-white/15 text-emerald-700 dark:text-emerald-300 font-semibold shadow-sm" 
-                : "text-foreground/85 hover:text-foreground hover:bg-white/50 dark:hover:bg-white/10"
-            }`}
+          {/* Dropdown Tentang Kami Khas Sidogiri */}
+          <div 
+            className="relative"
+            onMouseEnter={handleAboutEnter}
+            onMouseLeave={handleAboutLeave}
           >
-            Tentang Kami
-          </Link>
+            <Link
+              href="/about"
+              onClick={() => setIsAboutOpen(false)}
+              className={`text-xs font-medium px-4 py-1.5 rounded-full transition-all duration-200 flex items-center gap-1.5 cursor-pointer ${
+                isCurrent("/about") 
+                  ? "bg-white/60 dark:bg-white/15 text-emerald-700 dark:text-emerald-300 font-semibold shadow-sm" 
+                  : "text-foreground/85 hover:text-foreground hover:bg-white/50 dark:hover:bg-white/10"
+              }`}
+            >
+              <span>Tentang Kami</span>
+              <ChevronDown 
+                size={13} 
+                className={`opacity-60 transition-transform duration-300 ${
+                  isAboutOpen ? "rotate-180 text-emerald-600 dark:text-emerald-400" : ""
+                }`} 
+              />
+            </Link>
+
+            {/* Gapless Bridge + Liquid Glass Submenu Dropdown */}
+            <div 
+              className={`absolute top-full left-0 pt-2 w-72 z-50 origin-top-left transition-all duration-300 ease-out ${
+                isAboutOpen 
+                  ? "opacity-100 scale-100 pointer-events-auto translate-y-0" 
+                  : "opacity-0 scale-95 pointer-events-none -translate-y-1"
+              }`}
+            >
+              <div className="rounded-2xl liquid-glass-elevated p-2.5 shadow-2xl border border-white/60 dark:border-white/10">
+                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border/40 mb-1.5 flex items-center justify-between">
+                  <span>Profil & Lembaga</span>
+                  <Link 
+                    href="/about" 
+                    onClick={() => setIsAboutOpen(false)}
+                    className="text-emerald-600 dark:text-emerald-400 hover:underline text-[10px]"
+                  >
+                    Selengkapnya
+                  </Link>
+                </div>
+
+                <Link 
+                  href="/about#profile" 
+                  onClick={() => setIsAboutOpen(false)}
+                  className="flex items-center gap-2.5 text-xs p-2 rounded-xl hover:bg-emerald-500/10 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
+                >
+                  <div className="w-6 h-6 rounded-lg bg-emerald-500/15 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+                    <ScrollText size={13} />
+                  </div>
+                  <div>
+                    <p className="font-semibold leading-tight">Profil & Sejarah 1745 M</p>
+                    <p className="text-[10px] text-muted-foreground">Sanad Salaf Sayyid Sulaiman</p>
+                  </div>
+                </Link>
+
+                <Link 
+                  href="/about#vision-mission" 
+                  onClick={() => setIsAboutOpen(false)}
+                  className="flex items-center gap-2.5 text-xs p-2 rounded-xl hover:bg-emerald-500/10 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
+                >
+                  <div className="w-6 h-6 rounded-lg bg-teal-500/15 flex items-center justify-center text-teal-600 dark:text-teal-400 shrink-0">
+                    <Award size={13} />
+                  </div>
+                  <div>
+                    <p className="font-semibold leading-tight">Visi, Misi & Panca Jiwa</p>
+                    <p className="text-[10px] text-muted-foreground">Fondasi Karakter Santri</p>
+                  </div>
+                </Link>
+
+                <Link 
+                  href="/about#organization" 
+                  onClick={() => setIsAboutOpen(false)}
+                  className="flex items-center gap-2.5 text-xs p-2 rounded-xl hover:bg-emerald-500/10 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
+                >
+                  <div className="w-6 h-6 rounded-lg bg-indigo-500/15 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+                    <Users size={13} />
+                  </div>
+                  <div>
+                    <p className="font-semibold leading-tight">Struktur Organisasi</p>
+                    <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-medium">Pengurus & Pimpinan Unit</p>
+                  </div>
+                </Link>
+
+                <Link 
+                  href="/about#teachers" 
+                  onClick={() => setIsAboutOpen(false)}
+                  className="flex items-center gap-2.5 text-xs p-2 rounded-xl hover:bg-emerald-500/10 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
+                >
+                  <div className="w-6 h-6 rounded-lg bg-amber-500/15 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
+                    <GraduationCap size={13} />
+                  </div>
+                  <div>
+                    <p className="font-semibold leading-tight">Dewan Asatidz & Pengajar</p>
+                    <p className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">Tahun Ajaran Sekarang</p>
+                  </div>
+                </Link>
+
+                <Link 
+                  href="/about#contact" 
+                  onClick={() => setIsAboutOpen(false)}
+                  className="flex items-center gap-2.5 text-xs p-2 rounded-xl hover:bg-emerald-500/10 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors border-t border-border/30 mt-1 pt-1.5"
+                >
+                  <div className="w-6 h-6 rounded-lg bg-emerald-500/15 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+                    <MapPin size={13} />
+                  </div>
+                  <div>
+                    <p className="font-semibold leading-tight">Kontak & Lokasi Pesantren</p>
+                    <p className="text-[10px] text-muted-foreground">Kranji, Bekasi Barat</p>
+                  </div>
+                </Link>
+              </div>
+            </div>
+          </div>
 
           {/* Dropdown Instansi Khas Sidogiri */}
           <div 
             className="relative"
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
+            onMouseEnter={handleInstansiEnter}
+            onMouseLeave={handleInstansiLeave}
           >
             <Link
               href="/institutions"
@@ -223,14 +356,6 @@ export function PublicNavbar() {
             <ImageIcon size={13} className="text-emerald-600 dark:text-emerald-400" />
             <span>Media & Galeri</span>
           </Link>
-
-          <Link 
-            href="/about#kontak" 
-            className="text-xs font-medium px-4 py-1.5 rounded-full text-foreground/85 hover:text-foreground hover:bg-white/50 dark:hover:bg-white/10 transition-all duration-200 flex items-center gap-1.5"
-          >
-            <PhoneCall size={12} className="text-teal-600 dark:text-teal-400" />
-            <span>Kontak</span>
-          </Link>
         </div>
 
         {/* Action Controls & Theme Switcher */}
@@ -310,13 +435,74 @@ export function PublicNavbar() {
             >
               Beranda Utama
             </Link>
-            <Link 
-              href="/about" 
-              onClick={() => setIsOpen(false)}
-              className="block text-xs font-medium p-2.5 rounded-2xl hover:bg-emerald-500/10 text-foreground transition-colors"
-            >
-              Tentang Kami & Profil
-            </Link>
+            {/* Tentang Kami Collapsible / Sub-menu */}
+            <div>
+              <div className="flex items-center justify-between p-2 rounded-2xl hover:bg-emerald-500/10 transition-colors">
+                <Link 
+                  href="/about" 
+                  onClick={() => setIsOpen(false)}
+                  className="text-xs font-semibold text-foreground flex-1"
+                >
+                  Tentang Kami & Profil
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setMobileAboutExpanded(!mobileAboutExpanded)}
+                  className="p-1 rounded-lg text-muted-foreground hover:text-foreground"
+                  aria-label="Toggle Tentang Kami Submenu"
+                >
+                  <ChevronDown
+                    size={14}
+                    className={`transition-transform duration-200 ${mobileAboutExpanded ? "rotate-180 text-emerald-600" : ""}`}
+                  />
+                </button>
+              </div>
+
+              {mobileAboutExpanded && (
+                <div className="pl-3.5 space-y-1 mt-1 border-l border-emerald-500/30 ml-2">
+                  <Link
+                    href="/about#profile"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-2 text-[11px] p-2 rounded-xl text-foreground/80 hover:text-foreground hover:bg-emerald-500/10 transition-colors"
+                  >
+                    <ScrollText size={12} className="text-emerald-600" />
+                    <span>Profil & Sejarah 1745 M</span>
+                  </Link>
+                  <Link
+                    href="/about#vision-mission"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-2 text-[11px] p-2 rounded-xl text-foreground/80 hover:text-foreground hover:bg-emerald-500/10 transition-colors"
+                  >
+                    <Award size={12} className="text-teal-600" />
+                    <span>Visi, Misi & Panca Jiwa</span>
+                  </Link>
+                  <Link
+                    href="/about#organization"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-2 text-[11px] p-2 rounded-xl text-foreground/80 hover:text-foreground hover:bg-emerald-500/10 transition-colors"
+                  >
+                    <Users size={12} className="text-indigo-600" />
+                    <span>Struktur Organisasi Ranting</span>
+                  </Link>
+                  <Link
+                    href="/about#teachers"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-2 text-[11px] p-2 rounded-xl text-foreground/80 hover:text-foreground hover:bg-emerald-500/10 transition-colors"
+                  >
+                    <GraduationCap size={12} className="text-amber-600" />
+                    <span>Dewan Asatidz & Pengajar TA Sekarang</span>
+                  </Link>
+                  <Link
+                    href="/about#contact"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-2 text-[11px] p-2 rounded-xl text-foreground/80 hover:text-foreground hover:bg-emerald-500/10 transition-colors"
+                  >
+                    <MapPin size={12} className="text-emerald-600" />
+                    <span>Kontak & Lokasi Pesantren</span>
+                  </Link>
+                </div>
+              )}
+            </div>
             <Link 
               href="/media" 
               onClick={() => setIsOpen(false)}
@@ -352,15 +538,6 @@ export function PublicNavbar() {
             >
               <Compass size={14} className="text-amber-600 dark:text-amber-400" />
               <span>TPQ Al-Qur&apos;an Sidogiri</span>
-            </Link>
-
-            <div className="border-t border-border/40 my-1.5" />
-            <Link 
-              href="/about#kontak" 
-              onClick={() => setIsOpen(false)}
-              className="block text-xs font-medium p-2.5 rounded-2xl hover:bg-emerald-500/10 text-foreground transition-colors"
-            >
-              Kontak & Lokasi Pesantren
             </Link>
           </div>
 

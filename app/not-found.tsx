@@ -97,7 +97,7 @@ export default function NotFound() {
               Pendaftaran Santri Baru
             </Link>
             <Link
-              href="/about#kontak"
+              href="/about#contact"
               className="px-3.5 py-1.5 rounded-full liquid-glass border border-white/30 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
               Hubungi Kami

@@ -75,15 +75,8 @@ export function proxy(request: NextRequest) {
       }
     }
 
-    // 2. Pengaturan & Sistem (/settings): HANYA Super Admin & Ketua Ranting
-    if (
-      pathname === "/settings" ||
-      pathname.startsWith("/settings/")
-    ) {
-      if (session.role !== "super_admin" && session.role !== "ketua_ranting") {
-        return NextResponse.redirect(new URL("/modules?error=unauthorized", request.url));
-      }
-    }
+    // 2. Pengaturan & Sistem (/settings): Tersedia bagi seluruh pengguna terautentikasi (Profil & Keamanan), 
+    // dengan proteksi RBAC dinamis untuk konfigurasi institusi & sistem global.
 
     // 3. Data Science & AI (/data-science): HANYA Super Admin & Ketua Ranting
     if (pathname === "/data-science" || pathname.startsWith("/data-science/")) {

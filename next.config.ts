@@ -69,6 +69,66 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: "/about/profile",
+        destination: "/about#profile",
+        permanent: true,
+      },
+      {
+        source: "/about/vision-mission",
+        destination: "/about#vision-mission",
+        permanent: true,
+      },
+      {
+        source: "/about/organization",
+        destination: "/about#organization",
+        permanent: true,
+      },
+      {
+        source: "/about/teachers",
+        destination: "/about#teachers",
+        permanent: true,
+      },
+      {
+        source: "/about/contact",
+        destination: "/about#contact",
+        permanent: true,
+      },
+      // Backward compatibility untuk path bahasa Indonesia lama
+      {
+        source: "/about/kontak",
+        destination: "/about#contact",
+        permanent: true,
+      },
+      {
+        source: "/about/lembaga",
+        destination: "/institutions",
+        permanent: true,
+      },
+      {
+        source: "/about/unit-pendidikan",
+        destination: "/institutions",
+        permanent: true,
+      },
+      {
+        source: "/about/struktur-organisasi",
+        destination: "/about#organization",
+        permanent: true,
+      },
+      {
+        source: "/about/dewan-asatidz",
+        destination: "/about#teachers",
+        permanent: true,
+      },
+      {
+        source: "/about/visi-misi",
+        destination: "/about#vision-mission",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

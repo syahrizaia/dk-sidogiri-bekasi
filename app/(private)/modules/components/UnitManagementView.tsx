@@ -36,6 +36,9 @@ import {
 } from "@/lib/actions/units";
 import { SantriRecord } from "@/lib/actions/students";
 import { TeacherRecord } from "@/lib/actions/teachers";
+import { getUserPermissionsAction, type UserPermissionsResult } from "@/lib/actions/roles";
+import { CurriculumManagementTab } from "./CurriculumManagementTab";
+import { ScheduleManagementTab } from "./ScheduleManagementTab";
 
 interface UnitManagementViewProps {
   slug: "mi" | "mts" | "tpq";
@@ -45,6 +48,7 @@ export function UnitManagementView({ slug }: UnitManagementViewProps) {
   const [unit, setUnit] = useState<UnitRecord | null>(null);
   const [students, setStudents] = useState<SantriRecord[]>([]);
   const [teachers, setTeachers] = useState<TeacherRecord[]>([]);
+  const [userPermissions, setUserPermissions] = useState<UserPermissionsResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"students" | "teachers" | "curriculum" | "schedules">("students");
   
@@ -55,6 +59,19 @@ export function UnitManagementView({ slug }: UnitManagementViewProps) {
   // Search & Filters for Teachers tab
   const [teacherSearch, setTeacherSearch] = useState("");
 
+  const canCreate = Boolean(
+    userPermissions?.isSuperAdmin ||
+    userPermissions?.crudPermissions?.[slug]?.create
+  );
+  const canUpdate = Boolean(
+    userPermissions?.isSuperAdmin ||
+    userPermissions?.crudPermissions?.[slug]?.update
+  );
+  const canDelete = Boolean(
+    userPermissions?.isSuperAdmin ||
+    userPermissions?.crudPermissions?.[slug]?.delete
+  );
+
   useEffect(() => {
     let ignore = false;
     setLoading(true);
@@ -63,8 +80,9 @@ export function UnitManagementView({ slug }: UnitManagementViewProps) {
       getUnitBySlugAction(slug),
       getUnitStudentsAction(slug),
       getUnitTeachersAction(slug),
+      getUserPermissionsAction(),
     ])
-      .then(([unitRes, studentsRes, teachersRes]) => {
+      .then(([unitRes, studentsRes, teachersRes, permRes]) => {
         if (ignore) return;
         if (unitRes.success && unitRes.data) {
           setUnit(unitRes.data);
@@ -74,6 +92,9 @@ export function UnitManagementView({ slug }: UnitManagementViewProps) {
         }
         if (teachersRes.success && teachersRes.data) {
           setTeachers(teachersRes.data);
+        }
+        if (permRes?.success && permRes?.data) {
+          setUserPermissions(permRes.data);
         }
       })
       .catch((err) => {
@@ -366,9 +387,6 @@ export function UnitManagementView({ slug }: UnitManagementViewProps) {
         >
           <BookOpen size={16} className="shrink-0" />
           <span>Kurikulum & Kitab Kuning</span>
-          <span className="px-2 py-0.5 rounded-full text-[10px] bg-white/20 text-white font-mono shrink-0">
-            {unit.curriculum?.length || 0}
-          </span>
         </button>
 
         <button
@@ -550,161 +568,176 @@ export function UnitManagementView({ slug }: UnitManagementViewProps) {
 
           {/* Teachers Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full max-w-full">
-            {filteredTeachers.map((teacher) => (
-              <div
-                key={teacher.nip}
-                className="rounded-3xl liquid-glass-elevated p-5 border border-white/60 dark:border-white/10 shadow-lg relative overflow-hidden flex flex-col justify-between min-w-0"
-              >
-                <div>
-                  <div className="flex items-start justify-between gap-3 mb-3">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-teal-700 to-emerald-500 p-0.5 shadow-md flex-shrink-0">
-                      <div className="w-full h-full rounded-[14px] bg-card flex items-center justify-center font-bold text-teal-600 dark:text-teal-400">
-                        <GraduationCap size={22} />
+            {filteredTeachers.length === 0 ? (
+              <div className="p-12 text-center text-muted-foreground rounded-3xl liquid-glass border border-white/60 dark:border-white/10 col-span-full">
+                <UserCheck className="w-10 h-10 mx-auto text-muted-foreground/40 mb-3" />
+                <p className="font-bold text-sm text-foreground">Tidak ada asatidz yang sesuai pencarian</p>
+                <p className="text-xs text-muted-foreground mt-1">Coba sesuaikan kata kunci nama, NIP, atau keahlian.</p>
+              </div>
+            ) : (
+              filteredTeachers.map((teacher) => {
+                const currentUnitCode: "MI" | "MTs" | "TPQ" = slug === "mi" ? "MI" : slug === "mts" ? "MTs" : "TPQ";
+                const assignedUnits = (teacher.institutions && teacher.institutions.length > 0)
+                  ? teacher.institutions
+                  : [teacher.institution];
+
+                const unitHomeroom = (teacher.homeroomAssignments || []).find((h) => h.unit === currentUnitCode);
+                const otherHomerooms = (teacher.homeroomAssignments || []).filter((h) => h.unit !== currentUnitCode);
+                const unitTeachings = (teacher.teachingAssignments || []).filter((t) => t.unit === currentUnitCode);
+
+                return (
+                  <div
+                    key={teacher.nip}
+                    className="rounded-3xl liquid-glass-elevated p-5 border border-white/60 dark:border-white/10 shadow-lg relative overflow-hidden flex flex-col justify-between min-w-0"
+                  >
+                    <div>
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-teal-700 to-emerald-500 p-0.5 shadow-md flex-shrink-0">
+                          <div className="w-full h-full rounded-[14px] bg-card flex items-center justify-center font-bold text-teal-600 dark:text-teal-400">
+                            <GraduationCap size={22} />
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-teal-500/15 text-teal-800 dark:text-teal-300 border border-teal-500/30 font-bold shrink-0">
+                            {teacher.nip}
+                          </span>
+                        </div>
+                      </div>
+
+                      <h3 className="font-extrabold text-foreground text-sm sm:text-base leading-tight break-words">
+                        {teacher.name}
+                      </h3>
+                      <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 mt-0.5">
+                        {teacher.role}
+                      </p>
+
+                      {/* Multi-unit Badges */}
+                      <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
+                        {assignedUnits.map((u) => {
+                          const isCurrent = u === currentUnitCode;
+                          return (
+                            <span
+                              key={u}
+                              className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border transition-all ${
+                                isCurrent
+                                  ? u === "MI"
+                                    ? "bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-500/40 ring-1 ring-emerald-500/20"
+                                    : u === "MTs"
+                                    ? "bg-teal-500/20 text-teal-800 dark:text-teal-300 border-teal-500/40 ring-1 ring-teal-500/20"
+                                    : "bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-500/40 ring-1 ring-amber-500/20"
+                                  : "bg-muted/40 text-muted-foreground border-border/40"
+                              }`}
+                            >
+                              Unit {u}
+                            </span>
+                          );
+                        })}
+                      </div>
+
+                      {/* Homeroom Assignment in this Unit */}
+                      {unitHomeroom ? (
+                        <div className="mt-3.5 p-2.5 rounded-2xl bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/30 flex items-center gap-2.5">
+                          <div className="w-7 h-7 rounded-xl bg-amber-500/20 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0">
+                            <ShieldCheck size={16} />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <span className="text-[10px] uppercase font-bold text-amber-700 dark:text-amber-300 block leading-tight">
+                              Wali Kelas {currentUnitCode}
+                            </span>
+                            <span className="text-xs font-black text-foreground truncate block">
+                              {unitHomeroom.className}
+                            </span>
+                          </div>
+                        </div>
+                      ) : otherHomerooms.length > 0 ? (
+                        <div className="mt-3 p-2 rounded-xl bg-muted/30 border border-border/30 text-[10px] text-muted-foreground flex items-center gap-1.5">
+                          <ShieldCheck size={13} className="text-muted-foreground/60 shrink-0" />
+                          <span className="truncate">
+                            Wali Kelas: {otherHomerooms.map((h) => `${h.unit} (${h.className})`).join(", ")}
+                          </span>
+                        </div>
+                      ) : null}
+
+                      {/* Subjects in this Unit */}
+                      <div className="mt-3 p-3 rounded-2xl bg-white/40 dark:bg-white/5 border border-white/40 dark:border-white/10 text-xs space-y-1.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[10px] uppercase font-bold text-muted-foreground block">
+                            Tugas Mengajar di {currentUnitCode}
+                          </span>
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-white/60 dark:bg-white/10 text-muted-foreground">
+                            {unitTeachings.length} Mapel
+                          </span>
+                        </div>
+
+                        {unitTeachings.length > 0 ? (
+                          <div className="flex flex-wrap gap-1 pt-0.5">
+                            {unitTeachings.map((t) => (
+                              <span
+                                key={t.subjectId || t.subjectCode}
+                                className="px-2 py-0.5 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/20 text-[11px] font-semibold"
+                              >
+                                {t.subjectName}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-[11px] text-muted-foreground italic">
+                            {teacher.specialization || "Belum ada mata pelajaran khusus yang ditugaskan"}
+                          </div>
+                        )}
                       </div>
                     </div>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-teal-500/15 text-teal-800 dark:text-teal-300 border border-teal-500/30 font-bold shrink-0">
-                      {teacher.nip}
-                    </span>
-                  </div>
 
-                  <h3 className="font-extrabold text-foreground text-sm leading-tight break-words">
-                    {teacher.name}
-                  </h3>
-                  <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 mt-0.5">
-                    {teacher.role}
-                  </p>
-
-                  <div className="mt-4 p-3 rounded-2xl bg-white/40 dark:bg-white/5 border border-white/40 dark:border-white/10 text-xs space-y-1.5">
-                    <div>
-                      <span className="text-[10px] uppercase font-bold text-muted-foreground block">
-                        Spesialisasi Kitab / Mata Pelajaran
+                    <div className="mt-4 pt-3 border-t border-border/30 flex items-center justify-between text-xs text-muted-foreground gap-2">
+                      <span className="flex items-center gap-1 font-mono text-[11px] truncate">
+                        <Phone size={12} className="text-teal-600 shrink-0" />
+                        <span>{teacher.phone}</span>
                       </span>
-                      <span className="font-semibold text-foreground break-words">
-                        {teacher.specialization}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 shrink-0">
+                          <CheckCircle2 size={11} />
+                          <span>{teacher.status}</span>
+                        </span>
+                        <Link
+                          href={`/teachers`}
+                          title="Buka Penugasan di Direktori Asatidz"
+                          className="p-1 rounded-lg hover:bg-white/50 dark:hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          <ExternalLink size={12} />
+                        </Link>
+                      </div>
                     </div>
                   </div>
-                </div>
-
-                <div className="mt-4 pt-3 border-t border-border/30 flex items-center justify-between text-xs text-muted-foreground gap-2">
-                  <span className="flex items-center gap-1 font-mono text-[11px] truncate">
-                    <Phone size={12} className="text-teal-600 shrink-0" />
-                    <span>{teacher.phone}</span>
-                  </span>
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 shrink-0">
-                    <CheckCircle2 size={11} />
-                    <span>{teacher.status}</span>
-                  </span>
-                </div>
-              </div>
-            ))}
+                );
+              })
+            )}
           </div>
         </div>
       )}
 
       {/* TAB 3: KURIKULUM & KITAB KUNING */}
       {activeTab === "curriculum" && (
-        <div className="space-y-4 w-full max-w-full">
-          <div className="p-4 rounded-3xl liquid-glass border border-indigo-500/30 bg-indigo-500/5 flex items-start gap-3 w-full max-w-full">
-            <BookOpen className="w-5 h-5 text-indigo-600 flex-shrink-0 mt-0.5" />
-            <div className="min-w-0 flex-1">
-              <h3 className="text-sm font-bold text-foreground">
-                Khazanah Turats & Kurikulum Standar Pondok Pesantren Sidogiri Pasuruan
-              </h3>
-              <p className="text-xs text-muted-foreground mt-0.5 break-words">
-                Setiap kitab dipelajari dengan metode sorogan (privat) dan bandongan (klasikal) untuk menjamin santri menguasai makna harfiah (murad gandul Pegon Jawa) dan pemahaman kontekstual.
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-full">
-            {unit.curriculum?.map((item, idx) => (
-              <div
-                key={idx}
-                className="rounded-3xl liquid-glass-elevated p-5 border border-white/60 dark:border-white/10 shadow-lg relative overflow-hidden min-w-0"
-              >
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] uppercase font-bold bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30 truncate">
-                    {item.bidang}
-                  </span>
-                  <span className="text-xs font-bold text-muted-foreground font-mono shrink-0">
-                    {item.kelas}
-                  </span>
-                </div>
-
-                <h4 className="text-base font-extrabold text-foreground mb-1 break-words">
-                  {item.kitab}
-                </h4>
-
-                <div className="mt-3 p-3 rounded-2xl bg-white/40 dark:bg-white/5 border border-white/40 dark:border-white/10 text-xs">
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground block mb-0.5">
-                    Target Capaian & Standar Mutu
-                  </span>
-                  <p className="text-foreground font-medium break-words">
-                    {item.target}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <CurriculumManagementTab
+          unitSlug={slug}
+          unitName={unit.name}
+          teachers={teachers}
+          canCreate={canCreate}
+          canUpdate={canUpdate}
+          canDelete={canDelete}
+        />
       )}
 
       {/* TAB 4: JADWAL TA'LIM & KBM */}
       {activeTab === "schedules" && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full max-w-full">
-          {/* Schedule List */}
-          <div className="lg:col-span-2 space-y-3 min-w-0 w-full">
-            <h3 className="text-sm font-extrabold text-foreground flex items-center gap-2">
-              <Clock size={16} className="text-amber-600 shrink-0" />
-              <span>Jadwal Harian KBM & Halaqah Ta&apos;lim</span>
-            </h3>
-
-            <div className="space-y-3 w-full">
-              {unit.schedules?.map((sched, idx) => (
-                <div
-                  key={idx}
-                  className="rounded-3xl liquid-glass-elevated p-4 sm:p-5 border border-white/60 dark:border-white/10 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-3 min-w-0"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-600 flex-shrink-0 font-bold">
-                      <Calendar size={18} />
-                    </div>
-                    <div className="min-w-0 flex-1 truncate">
-                      <span className="font-extrabold text-foreground text-sm block truncate">
-                        {sched.hari}
-                      </span>
-                      <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 truncate block">
-                        {sched.kegiatan}
-                      </span>
-                    </div>
-                  </div>
-
-                  <span className="px-3 py-1 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs font-bold font-mono self-start sm:self-center shrink-0">
-                    {sched.waktu}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Facilities Card */}
-          <div className="space-y-3 min-w-0 w-full">
-            <h3 className="text-sm font-extrabold text-foreground flex items-center gap-2">
-              <Layers size={16} className="text-teal-600 shrink-0" />
-              <span>Sarana & Fasilitas Penunjang</span>
-            </h3>
-
-            <div className="rounded-3xl liquid-glass-elevated p-5 border border-white/60 dark:border-white/10 shadow-lg space-y-3 w-full">
-              {unit.facilities?.map((facility, idx) => (
-                <div key={idx} className="flex items-start gap-2.5 text-xs">
-                  <CheckCircle2 size={15} className="text-emerald-600 flex-shrink-0 mt-0.5" />
-                  <span className="font-semibold text-foreground break-words">{facility}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        <ScheduleManagementTab
+          unitSlug={slug}
+          unitName={unit.name}
+          teachers={teachers}
+          facilities={unit.facilities}
+          canCreate={canCreate}
+          canUpdate={canUpdate}
+          canDelete={canDelete}
+        />
       )}
     </div>
   );

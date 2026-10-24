@@ -168,15 +168,15 @@ export function Footer() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-muted-foreground text-center sm:text-left">
           <p>© 2026 Darul Khidmah Sidogiri Bekasi. Khidmah Lil-Ma&apos;had Wal-Ummah.</p>
           <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3 sm:gap-5">
-            <Link href="/about#kontak" className="hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
+            <Link href="/about#contact" className="hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
               Kebijakan Privasi
             </Link>
             <span className="opacity-30">•</span>
-            <Link href="/about#kontak" className="hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
+            <Link href="/about#contact" className="hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
               Ketentuan Layanan
             </Link>
             <span className="opacity-30">•</span>
-            <Link href="/about#kontak" className="hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
+            <Link href="/about#contact" className="hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
               Bantuan Khidmah
             </Link>
           </div>

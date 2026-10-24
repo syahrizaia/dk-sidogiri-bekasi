@@ -273,3 +273,80 @@ export async function updateStudentAction(id: string, payload: Partial<SantriRec
     return { success: false, error: "Gagal memperbarui data santri." };
   }
 }
+
+/**
+ * Mengambil daftar kelas unik yang tersedia di masing-masing jenjang (MI, MTs, TPQ)
+ */
+export async function getDistinctClassesAction(): Promise<{
+  success: boolean;
+  data?: Record<"MI" | "MTs" | "TPQ", string[]>;
+  error?: string;
+}> {
+  try {
+    const db = await getDatabase();
+    const collection = db.collection<SantriRecord>("students");
+
+    const defaultClasses: Record<"MI" | "MTs" | "TPQ", string[]> = {
+      MI: [
+        "1 Ibtidaiyah",
+        "2 Ibtidaiyah",
+        "3 Ibtidaiyah A",
+        "4 Ibtidaiyah A",
+        "4 Ibtidaiyah B",
+        "5 Ibtidaiyah A",
+        "5 Ibtidaiyah B",
+        "5 Ibtidaiyah C",
+        "6 Ibtidaiyah A",
+        "6 Ibtidaiyah B",
+      ],
+      MTs: [
+        "Persiapan 1 MTs",
+        "Persiapan 2 MTs",
+        "7 Tsanawiyah A",
+        "8 Tsanawiyah A",
+        "9 Tsanawiyah A",
+      ],
+      TPQ: [
+        "Jilid 1 Al-Qur'an",
+        "Jilid 2 Al-Qur'an",
+        "Jilid 3 Al-Qur'an",
+        "Jilid 4 Al-Qur'an",
+        "Jilid 5 Al-Qur'an",
+        "Jilid 6 Al-Qur'an",
+        "Tartil Tajwid",
+      ],
+    };
+
+    const students = await collection.find({}).toArray();
+
+    const miSet = new Set(defaultClasses.MI);
+    const mtsSet = new Set(defaultClasses.MTs);
+    const tpqSet = new Set(defaultClasses.TPQ);
+
+    students.forEach((s) => {
+      if (s.kelas && s.kelas.trim()) {
+        if (s.jenjang === "MI") miSet.add(s.kelas.trim());
+        else if (s.jenjang === "MTs") mtsSet.add(s.kelas.trim());
+        else if (s.jenjang === "TPQ") tpqSet.add(s.kelas.trim());
+      }
+    });
+
+    const result = {
+      MI: Array.from(miSet).sort(),
+      MTs: Array.from(mtsSet).sort(),
+      TPQ: Array.from(tpqSet).sort(),
+    };
+
+    return {
+      success: true,
+      data: serializeData(result),
+    };
+  } catch (error) {
+    console.error("Error in getDistinctClassesAction:", error);
+    return {
+      success: false,
+      error: "Gagal memuat daftar kelas.",
+    };
+  }
+}
+
